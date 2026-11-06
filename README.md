@@ -361,6 +361,33 @@ If the client is hosted on a static host/CDN and the API elsewhere:
 3. Set `CLIENT_URL=https://your-domain.com` on the API server.
 4. Enable HTTPS on both; the browser will block mixed content otherwise.
 
+### 5. Vercel (frontend only)
+
+The repository includes `vercel.json` (repo root) and `client/vercel.json` (client root) with SPA rewrites, so React Router deep links work on refresh.
+
+**Recommended:** import `ahzahid81/Dates_Shop_Erp` into Vercel and set **Root Directory** to `client`.
+
+| Setting | Value |
+| --- | --- |
+| Framework Preset | `Vite` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
+
+Add this environment variable in **Vercel → Project → Settings → Environment Variables** (Production and Preview):
+
+```env
+VITE_API_URL=https://your-api-domain.com/api
+```
+
+`VITE_API_URL` must be the deployed backend URL including `/api`, and the backend must be reachable over HTTPS. Then add the Vercel domain to the API's CORS allow-list:
+
+```env
+CLIENT_URL=https://your-app.vercel.app,https://your-custom-domain.com
+```
+
+Redeploy after changing `VITE_*` variables because Vite embeds them at build time. If you deploy from the repo root instead of setting Root Directory to `client`, the root `vercel.json` handles the install/build/output paths automatically.
+
 ---
 
 ## Operational notes
