@@ -20,8 +20,8 @@ import { useI18n } from '../context/I18nContext';
 import { getErrorMessage } from '../lib/api';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@datesshop.com');
-  const [password, setPassword] = useState('Admin@12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -203,19 +203,6 @@ export default function Login() {
                 {loading ? t('login.signingIn') : t('login.signIn')}
                 {!loading && <ArrowRight className="h-4 w-4" />}
               </button>
-
-              <div className="rounded-xl bg-slate-50 px-3.5 py-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Demo accounts</p>
-                <div className="mt-1.5 space-y-1 text-[11px] text-slate-500">
-                  <p>
-                    <span className="font-semibold text-slate-600">Admin:</span> admin@datesshop.com / Admin@12345
-                  </p>
-                  <p>
-                    <span className="font-semibold text-slate-600">Employee:</span> employee@datesshop.com /
-                    Employee@12345
-                  </p>
-                </div>
-              </div>
             </form>
 
             <p className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
