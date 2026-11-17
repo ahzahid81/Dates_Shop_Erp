@@ -9,7 +9,9 @@ export default function PrintHeader({ title, meta }) {
       <div className="flex items-start justify-between gap-6">
         <div>
           <p className="text-lg font-extrabold uppercase tracking-wide text-black">{SHOP.name}</p>
-          <p className="text-[10px] uppercase tracking-wider text-black">{SHOP.legalName}</p>
+          {SHOP.legalName !== SHOP.name && (
+            <p className="text-[10px] uppercase tracking-wider text-black">{SHOP.legalName}</p>
+          )}
           <p className="mt-1 text-[10px] text-black">{SHOP.address}</p>
           <p className="text-[10px] text-black">
             {SHOP.phone} - {SHOP.email}

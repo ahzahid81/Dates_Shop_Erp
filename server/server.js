@@ -48,7 +48,7 @@ app.use(
 );
 
 app.get('/api/health', (req, res) =>
-  res.json({ status: 'ok', service: 'Dates Shop ERP', time: new Date().toISOString() })
+  res.json({ status: 'ok', service: 'Vision Dates', time: new Date().toISOString() })
 );
 
 app.use('/api/auth', require('./routes/auth'));

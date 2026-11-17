@@ -1,5 +1,5 @@
 
-name: Deploy Dates Shop ERP Backend
+name: Deploy Vision Dates Backend
 
 on:
   push:

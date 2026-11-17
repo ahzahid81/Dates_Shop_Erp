@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    'common.appName': 'Dates Shop ERP',
+    'common.appName': 'Vision Dates',
     'common.tagline': 'Sales, stock, cash & profit — all in one place',
     'common.loading': 'Loading...',
     'common.save': 'Save',
@@ -525,7 +525,7 @@ export const translations = {
     'notFound.notAllowedText': 'You do not have permission to view this page.',
   },
   bn: {
-    'common.appName': 'ডেটস শপ ERP',
+    'common.appName': 'ভিশন ডেটস',
     'common.tagline': 'বিক্রয়, স্টক, নগদ ও লাভ — সব এক জায়গায়',
     'common.loading': 'লোড হচ্ছে...',
     'common.save': 'সংরক্ষণ',

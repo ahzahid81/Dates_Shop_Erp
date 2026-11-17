@@ -2,7 +2,7 @@
   "name": "dates-shop-erp-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Express API for Dates Shop ERP",
+  "description": "Express API for Vision Dates",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

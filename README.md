@@ -1,4 +1,4 @@
-# Dates Shop ERP
+# Vision Dates
 
 A complete, modern, mobile-responsive Shop ERP built with the MERN stack. It ships with a bilingual (English / বাংলা) interface, role-based access, POS sales, shop and cold-storage stock, cash tracking, profit reports, statements, invoices, quotations, audit logs and printable/PDF documents.
 
@@ -162,7 +162,7 @@ Then check:
 
 ```bash
 curl http://localhost:5000/api/health
-# {"status":"ok","service":"Dates Shop ERP", ...}
+# {"status":"ok","service":"Vision Dates", ...}
 ```
 
 Open the site, sign in with a seeded account, create a product/stock entry and a test sale, and confirm the dashboard, cash balance and audit log update.
@@ -192,12 +192,12 @@ The client reads these `VITE_*` values at build time. Create `client/.env` or ex
 | Variable | Default |
 | --- | --- |
 | `VITE_API_URL` | `/api` |
-| `VITE_SHOP_NAME` | `Dates Shop` |
-| `VITE_SHOP_LEGAL_NAME` | `Dates Shop ERP` |
-| `VITE_SHOP_ADDRESS` | `King Fahd Road, Riyadh 12211, Saudi Arabia` |
+| `VITE_SHOP_NAME` | `Vision Dates` |
+| `VITE_SHOP_LEGAL_NAME` | `Vision Dates` |
+| `VITE_SHOP_ADDRESS` | `Madinah, Saudi Arabia` |
 | `VITE_SHOP_PHONE` | `+966 50 000 0000` |
-| `VITE_SHOP_EMAIL` | `hello@datesshop.com` |
-| `VITE_SHOP_WEBSITE` | `www.datesshop.com` |
+| `VITE_SHOP_EMAIL` | `hello@visiondates.com` |
+| `VITE_SHOP_WEBSITE` | `www.visiondates.com` |
 | `VITE_SHOP_BIN` | `BIN 000000000-0000` |
 
 ---

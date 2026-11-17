@@ -134,7 +134,9 @@ export default function QuotationView() {
               </span>
               <div className="min-w-0">
                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">{SHOP.name}</h1>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-brand-600">{SHOP.legalName}</p>
+                {SHOP.legalName !== SHOP.name && (
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-brand-600">{SHOP.legalName}</p>
+                )}
                 <div className="mt-2 space-y-0.5 break-words text-[11px] text-slate-500">
                   <p className="flex items-start gap-1.5"><MapPin className="mt-0.5 h-3 w-3 shrink-0" /> {SHOP.address}</p>
                   <p className="flex items-center gap-1.5"><Phone className="h-3 w-3 shrink-0" /> {SHOP.phone}</p>
