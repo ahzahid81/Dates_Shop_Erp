@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, Banknote, Package, RefreshCw, TrendingUp, Wallet } from 'lucide-react';
+import { BarChart3, Banknote, Package, Percent, RefreshCw, TrendingUp, Wallet } from 'lucide-react';
 import {
   Bar,
   BarChart,

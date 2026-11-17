@@ -113,7 +113,7 @@ function ProductForm({ open, onClose, product, onSaved }) {
         <div>
           <label className="label">{t('products.unit')}</label>
           <select className="select" value={form.unit} onChange={set('unit')}>
-            {['pcs', 'box', 'jar', 'pack', 'gram', 'litre'].map((unit) => (
+            {['pcs', 'box', 'jar', 'pack', 'kg', 'gram', 'litre'].map((unit) => (
               <option key={unit} value={unit}>
                 {unit}
               </option>
@@ -130,19 +130,20 @@ function ProductForm({ open, onClose, product, onSaved }) {
             onChange={set('lowStockThreshold')}
           />
         </div>
-        <div className="sm:col-span-2">
-          <label className="label">Cost price</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            className="input"
-            value={form.costPrice}
-            onChange={set('costPrice')}
-            required
-          />
-          <p className="mt-1 text-[10px] text-slate-400">Used to calculate profit automatically</p>
-        </div>
+        {product && (
+          <div className="sm:col-span-2">
+            <label className="label">Cost price</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="input"
+              value={form.costPrice}
+              onChange={set('costPrice')}
+            />
+            <p className="mt-1 text-[10px] text-slate-400">Updated automatically when stock is added</p>
+          </div>
+        )}
         <div className="sm:col-span-2">
           <label className="label">
             Description (optional)
