@@ -13,8 +13,9 @@ import {
 import toast from 'react-hot-toast';
 import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
-import { formatMoney, formatNumber, startOfMonthInput, todayInput } from '../lib/format';
+import { formatDate, formatMoney, formatNumber, startOfMonthInput, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import ChartTooltip from '../components/ChartTooltip';
 import { EmptyState, PageLoader } from '../components/States';
@@ -54,10 +55,15 @@ export default function Profit() {
   }));
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader
+        title={t('profit.title')}
+        meta={`${formatDate(range.from)} - ${formatDate(range.to)}`}
+      />
       <PageHeader
         title={t('profit.title')}
         subtitle={t('profit.subtitle')}
+        printable
         actions={
           <>
             <input

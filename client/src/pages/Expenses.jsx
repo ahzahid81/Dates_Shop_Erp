@@ -7,6 +7,7 @@ import { useI18n } from '../context/I18nContext';
 import { EXPENSE_CATEGORIES } from '../config';
 import { formatDate, formatMoney, paymentLabel, startOfMonthInput, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { EmptyState, SkeletonRows } from '../components/States';
@@ -108,8 +109,12 @@ export default function Expenses() {
   }, [expenses]);
 
   return (
-    <div>
-      <PageHeader title={t('expenses.title')} subtitle={t('expenses.subtitle')} />
+    <div className="print-area">
+      <PrintHeader
+        title={t('expenses.title')}
+        meta={`${formatDate(filters.from)} - ${formatDate(filters.to)}`}
+      />
+      <PageHeader title={t('expenses.title')} subtitle={t('expenses.subtitle')} printable />
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label={t('expenses.todayTotal')} value={formatMoney(summary.amount)} icon={Wallet} tone="rose" />
@@ -117,14 +122,14 @@ export default function Expenses() {
         <StatCard label={t('common.category')} value={topCategory} icon={TrendingDown} tone="amber" />
         <StatCard
           label={t('common.summary')}
-          value={formatMoney(expenses.length ? summary.amount / expenses.length : 0)}
+          value={formatMoney(summary.count ? summary.amount / summary.count : 0)}
           icon={BookOpenCheck}
           tone="slate"
         />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-5">
-        <div className="card card-pad xl:col-span-2">
+        <div className="no-print card card-pad xl:col-span-2">
           <div className="mb-4 flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
               <Plus className="h-4 w-4" />

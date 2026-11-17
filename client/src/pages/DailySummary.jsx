@@ -13,6 +13,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatDate, formatMoney, formatNumber, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import { EmptyState, PageLoader } from '../components/States';
 
@@ -41,6 +42,7 @@ export default function DailySummary() {
 
   return (
     <div className="print-area">
+      <PrintHeader title={t('daily.title')} meta={formatDate(date)} />
       <PageHeader
         title={t('daily.title')}
         subtitle={t('daily.subtitle')}

@@ -8,6 +8,12 @@ export const SHOP = {
   bin: import.meta.env.VITE_SHOP_BIN || 'BIN 000000000-0000',
 };
 
+export const SUPER_ADMIN_EMAIL = (
+  import.meta.env.VITE_SUPER_ADMIN_EMAIL || 'abdulhasibzahid@gmail.com'
+)
+  .trim()
+  .toLowerCase();
+
 export const EXPENSE_CATEGORIES = [
   'Rent',
   'Transport',

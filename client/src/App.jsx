@@ -26,6 +26,7 @@ import QuotationForm from './pages/QuotationForm';
 import QuotationView from './pages/QuotationView';
 import Users from './pages/Users';
 import AuditLogs from './pages/AuditLogs';
+import ResetDatabase from './pages/ResetDatabase';
 
 function NotFound() {
   const { t } = useI18n();
@@ -90,6 +91,7 @@ function AppRoutes() {
           <Route path="statements" element={<Statements />} />
           <Route path="users" element={<Users />} />
           <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="reset" element={<ResetDatabase />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

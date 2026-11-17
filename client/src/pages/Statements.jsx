@@ -14,6 +14,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { downloadBlob, formatDate, formatMoney, todayInput, startOfMonthInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import { EmptyState, PageLoader } from '../components/States';
 
@@ -79,6 +80,10 @@ export default function Statements() {
 
   return (
     <div className="print-area">
+      <PrintHeader
+        title={t('statements.title')}
+        meta={`${formatDate(filters.from)} - ${formatDate(filters.to)}`}
+      />
       <PageHeader
         title={t('statements.title')}
         subtitle={t('statements.subtitle')}

@@ -20,6 +20,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatDateTime, formatMoney, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
@@ -94,10 +95,12 @@ export default function Cash() {
   const chart = data.series.map((row) => ({ ...row, label: shortDate(row.date) }));
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader title={t('cash.title')} meta={t('cash.subtitle')} />
       <PageHeader
         title={t('cash.title')}
         subtitle={t('cash.subtitle')}
+        printable
         actions={
           <button type="button" className="btn-primary" onClick={() => setModal((prev) => ({ ...prev, open: true }))}>
             <Plus className="h-4 w-4" />

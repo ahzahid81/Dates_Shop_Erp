@@ -17,6 +17,7 @@ import {
   PanelLeftClose,
   Percent,
   Receipt,
+  RotateCcw,
   ShoppingCart,
   Snowflake,
   Users,
@@ -24,6 +25,7 @@ import {
   X,
 } from 'lucide-react';
 import Logo from './Logo';
+import { SUPER_ADMIN_EMAIL } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
 import { dateInput, TIME_ZONE } from '../lib/format';
@@ -68,6 +70,7 @@ const groups = [
     items: [
       { to: '/users', key: 'nav.users', icon: Users, adminOnly: true },
       { to: '/audit-logs', key: 'nav.audit', icon: Calculator, adminOnly: true },
+      { to: '/reset', key: 'nav.reset', icon: RotateCcw, adminOnly: true, superAdminOnly: true },
     ],
   },
 ];
@@ -92,15 +95,20 @@ export default function Layout({ children }) {
     navigate('/login');
   };
 
+  const isSuperAdmin =
+    isAdmin && String(user?.email || '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+  const canSee = (item) =>
+    (item.adminOnly ? isAdmin : true) && (item.superAdminOnly ? isSuperAdmin : true);
+
   const visibleGroups = groups
     .filter((group) => {
       if (group.adminOnly && !isAdmin) return false;
       if (group.employeeOnly && isAdmin) return false;
-      return group.items.some((item) => (item.adminOnly ? isAdmin : true));
+      return group.items.some((item) => canSee(item));
     })
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => (item.adminOnly ? isAdmin : true)),
+      items: group.items.filter((item) => canSee(item)),
     }));
 
   const sideContent = (

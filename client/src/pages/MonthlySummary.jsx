@@ -27,8 +27,9 @@ import {
 import toast from 'react-hot-toast';
 import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
-import { formatMoney, formatNumber, monthInput, paymentLabel } from '../lib/format';
+import { formatDate, formatMoney, formatNumber, monthInput, paymentLabel } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import ChartTooltip from '../components/ChartTooltip';
 import { EmptyState, PageLoader } from '../components/States';
@@ -82,10 +83,12 @@ export default function MonthlySummary() {
   );
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader title={t('monthly.title')} meta={formatDate(`${month}-01`)} />
       <PageHeader
         title={t('monthly.title')}
         subtitle={t('monthly.subtitle')}
+        printable
         actions={<input type="month" className="input w-auto" value={month} onChange={(e) => setMonth(e.target.value)} />}
       />
 
@@ -114,11 +117,11 @@ export default function MonthlySummary() {
           trend={s.change.expenses}
         />
         <StatCard
-          label={t('monthly.netProfit')}
-          value={formatMoney(s.netProfit)}
+          label={t('monthly.grossProfit')}
+          value={formatMoney(s.grossProfit)}
           icon={TrendingUp}
-          tone="violet"
-          trend={s.change.netProfit}
+          tone="emerald"
+          trend={s.change.profit}
         />
       </div>
 

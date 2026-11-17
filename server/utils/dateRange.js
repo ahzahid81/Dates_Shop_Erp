@@ -23,7 +23,7 @@ const monthRange = (monthStr) => {
 
 const dateRangeFromQuery = (from, to) => {
   const start = from ? new Date(`${from}T00:00:00${offset}`) : new Date(0);
-  const end = to ? new Date(`${to}T00:00:00${offset}`) : new Date();
+  const end = to ? new Date(`${to}T00:00:00${offset}`) : dayRange().end;
   if (to) end.setTime(end.getTime() + 24 * 60 * 60 * 1000);
   return { start, end };
 };

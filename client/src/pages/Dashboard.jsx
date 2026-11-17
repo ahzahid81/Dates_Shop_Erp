@@ -26,6 +26,7 @@ import api from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatDate, formatMoney, formatNumber } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
 import ChartTooltip from '../components/ChartTooltip';
@@ -76,11 +77,13 @@ export default function Dashboard() {
   const topMax = Math.max(...data.topProducts.map((p) => p.revenue), 1);
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader title={t('dashboard.title')} meta={formatDate(new Date())} />
       <PageHeader
         eyebrow={t('common.today')}
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
+        printable
         actions={
           <>
             <Link to="/sales/new" className="btn-primary">

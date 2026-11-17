@@ -81,6 +81,10 @@ const addStock = asyncHandler(async (req, res) => {
       });
     }
   } catch (error) {
+    if (entry) {
+      await CashTransaction.deleteMany({ reference: entry._id, referenceModel: 'StockEntry' });
+      await StockEntry.deleteOne({ _id: entry._id });
+    }
     product.stockQty = previousQty;
     product.costPrice = previousCost;
     await product.save();

@@ -60,6 +60,7 @@ app.use('/api/summary', require('./routes/summary'));
 app.use('/api/quotations', require('./routes/quotations'));
 app.use('/api/audit-logs', require('./routes/audit'));
 app.use('/api/cold-storage', require('./routes/coldStorage'));
+app.use('/api/system', require('./routes/system'));
 
 const clientDist = path.resolve(__dirname, '../client/dist');
 if (fs.existsSync(clientDist)) {

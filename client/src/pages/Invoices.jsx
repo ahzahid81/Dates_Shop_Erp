@@ -6,6 +6,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatDate, formatMoney, startOfMonthInput, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
@@ -61,10 +62,15 @@ export default function Invoices() {
   };
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader
+        title={t('invoices.title')}
+        meta={`${formatDate(filters.from)} - ${formatDate(filters.to)}`}
+      />
       <PageHeader
         title={t('invoices.title')}
         subtitle={t('invoices.subtitle')}
+        printable
         actions={
           <Link to="/sales/new" className="btn-primary">
             <ShoppingBag className="h-4 w-4" />
@@ -113,7 +119,7 @@ export default function Invoices() {
                     <th className="text-right">{t('invoices.paid')}</th>
                     <th className="text-right">{t('invoices.due')}</th>
                     <th>{t('common.status')}</th>
-                    <th className="text-right">{t('common.actions')}</th>
+                    <th className="no-print text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -134,7 +140,7 @@ export default function Invoices() {
                       <td>
                         <StatusBadge status={paymentStatus(sale)} />
                       </td>
-                      <td className="text-right">
+                      <td className="no-print text-right">
                         <Link to={`/invoices/${sale._id}`} className="btn-secondary btn-sm">
                           <FileText className="h-3.5 w-3.5" />
                           {t('common.view')}
@@ -162,7 +168,7 @@ export default function Invoices() {
                   </div>
                   <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
                     <span>{t('invoices.due')}: {formatMoney(sale.dueAmount)}</span>
-                    <Link to={`/invoices/${sale._id}`} className="btn-secondary btn-sm">
+                    <Link to={`/invoices/${sale._id}`} className="no-print btn-secondary btn-sm">
                       {t('common.view')}
                     </Link>
                   </div>

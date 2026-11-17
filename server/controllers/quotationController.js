@@ -116,9 +116,9 @@ const updateQuotation = asyncHandler(async (req, res) => {
   }
   if (discount !== undefined) {
     quotation.discount = Math.max(Number(discount) || 0, 0);
-    if (quotation.discount > quotation.subtotal) {
-      return res.status(422).json({ message: 'Discount cannot exceed subtotal' });
-    }
+  }
+  if (quotation.discount > quotation.subtotal) {
+    return res.status(422).json({ message: 'Discount cannot exceed subtotal' });
   }
   if (customer) {
     quotation.customer = {

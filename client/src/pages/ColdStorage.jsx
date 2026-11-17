@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api, { getErrorMessage } from '../lib/api';
 import { formatDate, formatMoney, formatNumber, monthInput, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import { EmptyState, SkeletonRows } from '../components/States';
 
@@ -149,10 +150,12 @@ export default function ColdStorage() {
   };
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader title="Cold Storage" meta={monthly?.month || ''} />
       <PageHeader
         title="Cold Storage"
         subtitle="Manage cold storage stock, transfers to shop, and reports"
+        printable
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
@@ -162,7 +165,7 @@ export default function ColdStorage() {
         <StatCard label="This Month Added" value={formatNumber(monthly?.summary?.addedQty || 0)} icon={Warehouse} tone="violet" />
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="no-print mb-4 flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button
             key={t.key}

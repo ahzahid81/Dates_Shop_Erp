@@ -13,8 +13,9 @@ import {
 import toast from 'react-hot-toast';
 import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
-import { formatDateTime, formatMoney, startOfMonthInput, todayInput } from '../lib/format';
+import { formatDate, formatDateTime, formatMoney, paymentLabel, startOfMonthInput, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
@@ -106,10 +107,15 @@ export default function Sales() {
   };
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader
+        title={t('sales.title')}
+        meta={`${formatDate(filters.from)} - ${formatDate(filters.to)}`}
+      />
       <PageHeader
         title={t('sales.title')}
         subtitle={t('sales.subtitle')}
+        printable
         actions={
           <Link to="/sales/new" className="btn-primary">
             <ShoppingBag className="h-4 w-4" />
@@ -171,7 +177,7 @@ export default function Sales() {
                     <th className="text-right">{t('invoices.paid')}</th>
                     <th className="text-right">{t('invoices.due')}</th>
                     <th>{t('common.status')}</th>
-                    <th className="text-right">{t('common.actions')}</th>
+                    <th className="no-print text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -197,7 +203,7 @@ export default function Sales() {
                       <td>
                         <StatusBadge status={sale.status} />
                       </td>
-                      <td>
+                      <td className="no-print">
                         <div className="flex items-center justify-end gap-1">
                           <Link to={`/invoices/${sale._id}`} className="icon-btn" title={t('sales.viewInvoice')}>
                             <FileText className="h-4 w-4" />
@@ -249,7 +255,7 @@ export default function Sales() {
                   <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
                     <span>{t('invoices.paid')}: {formatMoney(sale.paidAmount)}</span>
                     {sale.dueAmount > 0 && <span className="text-rose-600">{t('invoices.due')}: {formatMoney(sale.dueAmount)}</span>}
-                    <div className="ml-auto flex gap-1">
+                    <div className="no-print ml-auto flex gap-1">
                       {sale.status === 'completed' && sale.dueAmount > 0 && (
                         <button type="button" className="btn-secondary btn-sm" onClick={() => openPayment(sale)}>
                           {t('sales.payment')}

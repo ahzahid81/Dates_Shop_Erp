@@ -215,12 +215,19 @@
 }
 
 @media print {
+  html,
   body {
     background: #fff !important;
+    color: #000 !important;
   }
   aside,
   header.app-header,
-  .no-print {
+  footer,
+  .no-print,
+  button,
+  input,
+  select,
+  textarea {
     display: none !important;
   }
   .print-shell {
@@ -230,7 +237,12 @@
   main {
     padding: 0 !important;
     max-width: 100% !important;
+    margin: 0 !important;
   }
+  .page-enter {
+    animation: none !important;
+  }
+
   .print-area {
     border: 0 !important;
     border-radius: 0 !important;
@@ -239,6 +251,94 @@
     max-width: 100% !important;
     margin: 0 !important;
   }
+
+  /* Black & white output: drop every tint, gradient and shadow. */
+  .print-area,
+  .print-area * {
+    color: #000 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  .print-area .card,
+  .print-area .stat-card,
+  .print-area .mobile-card {
+    border: 1px solid #9ca3af !important;
+    border-radius: 6px !important;
+    break-inside: avoid;
+  }
+
+  .print-area .stat-icon {
+    display: none !important;
+  }
+
+  .print-area .badge,
+  .print-area .badge-green,
+  .print-area .badge-amber,
+  .print-area .badge-red,
+  .print-area .badge-slate,
+  .print-area .badge-blue {
+    border: 1px solid #4b5563 !important;
+    border-radius: 4px !important;
+    padding: 1px 6px !important;
+  }
+
+  /* Always print the desktop table instead of the mobile card list. */
+  .print-area .hidden.md\:block,
+  .print-area .hidden.lg\:block {
+    display: block !important;
+  }
+
+  .print-area .md\:hidden,
+  .print-area .lg\:hidden {
+    display: none !important;
+  }
+
+  .print-area .table-wrap {
+    overflow: visible !important;
+  }
+
+  .print-area table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .print-area thead tr,
+  .print-area .table thead th {
+    background-color: #f3f4f6 !important;
+  }
+
+  .print-area thead th,
+  .print-area .table thead th {
+    border-bottom: 2px solid #000 !important;
+    font-weight: 700 !important;
+  }
+
+  .print-area .table tbody td,
+  .print-area tbody td,
+  .print-area tfoot td {
+    border-bottom: 1px solid #d1d5db !important;
+  }
+
+  .print-area .table tbody tr,
+  .print-area tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-area .table tbody tr:hover {
+    background-color: transparent !important;
+  }
+
+  /* Charts keep their shape but print in shades of grey. */
+  .print-area .recharts-wrapper,
+  .print-area .recharts-surface {
+    filter: grayscale(1) !important;
+  }
+
   @page {
     size: A4;
     margin: 12mm;

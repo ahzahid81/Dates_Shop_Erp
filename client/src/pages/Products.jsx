@@ -14,6 +14,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatMoney, formatNumber } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import StatCard from '../components/StatCard';
@@ -213,10 +214,12 @@ export default function Products() {
   };
 
   return (
-    <div>
+    <div className="print-area">
+      <PrintHeader title={t('products.title')} meta={t('products.stockValue')} />
       <PageHeader
         title={t('products.title')}
         subtitle={t('products.subtitle')}
+        printable
         actions={
           <button type="button" className="btn-primary" onClick={() => setModal({ open: true, product: null })}>
             <Plus className="h-4 w-4" />
@@ -288,7 +291,7 @@ export default function Products() {
                     <th className="text-right">Cost price</th>
                     <th className="text-right">{t('common.stock')}</th>
                     <th className="text-right">Low stock alert at</th>
-                    <th className="text-right">{t('common.actions')}</th>
+                    <th className="no-print text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -310,7 +313,7 @@ export default function Products() {
                           </span>
                         </td>
                         <td className="text-right">{formatNumber(product.lowStockThreshold ?? 5)}</td>
-                        <td>
+                        <td className="no-print">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               type="button"

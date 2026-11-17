@@ -5,6 +5,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useI18n } from '../context/I18nContext';
 import { formatDate, formatMoney, formatNumber, todayInput } from '../lib/format';
 import PageHeader from '../components/PageHeader';
+import PrintHeader from '../components/PrintHeader';
 import StatCard from '../components/StatCard';
 import { EmptyState, SkeletonRows } from '../components/States';
 
@@ -109,8 +110,9 @@ export default function Stock() {
   };
 
   return (
-    <div>
-      <PageHeader title={t('stock.title')} subtitle={t('stock.subtitle')} />
+    <div className="print-area">
+      <PrintHeader title={t('stock.title')} meta={t('stock.subtitle')} />
+      <PageHeader title={t('stock.title')} subtitle={t('stock.subtitle')} printable />
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label={t('stock.totalProducts')} value={formatNumber(products.length)} icon={Boxes} tone="brand" />
@@ -125,7 +127,7 @@ export default function Stock() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-5">
-        <div className="card card-pad xl:col-span-2">
+        <div className="no-print card card-pad xl:col-span-2">
           <div className="mb-4 flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
               <PackagePlus className="h-4 w-4" />

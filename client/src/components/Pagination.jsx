@@ -5,7 +5,7 @@ export default function Pagination({ page, pages, onPage, total }) {
   const { t } = useI18n();
   if (!pages || pages <= 1) return null;
   return (
-    <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row">
+    <div className="no-print flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row">
       <p className="text-xs text-slate-500">
         {t('common.page') || 'Page'} {page} / {pages}
         {total !== undefined ? ` • ${total}` : ''}
