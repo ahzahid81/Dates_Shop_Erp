@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRightLeft, Boxes, PackagePlus, Plus, Snowflake, Warehouse } from 'lucide-react';
+import { ArrowRightLeft, Boxes, PackagePlus, Plus, Snowflake, Wallet, Warehouse } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api, { getErrorMessage } from '../lib/api';
 import { formatDate, formatMoney, formatNumber, monthInput, todayInput } from '../lib/format';
@@ -95,11 +95,15 @@ export default function ColdStorage() {
   const totals = useMemo(() => ({
     items: stock.length,
     qty: stock.reduce((sum, s) => sum + (s.quantity || 0), 0),
+    value: stock.reduce((sum, s) => sum + (s.value || 0), 0),
   }), [stock]);
 
   const selectedAdd = products.find((p) => p._id === addForm.product);
   const selectedTransfer = products.find((p) => p._id === transferForm.product);
   const availableForTransfer = stockMap.get(String(transferForm.product)) || 0;
+  const transferStock = stock.find((s) => String(s.product) === String(transferForm.product));
+  const transferUnitPrice = transferStock?.unitCost || 0;
+  const transferValue = (Number(transferForm.quantity) || 0) * transferUnitPrice;
 
   const submitAdd = async (e) => {
     e.preventDefault();
@@ -132,7 +136,7 @@ export default function ColdStorage() {
         ...transferForm,
         quantity: Number(transferForm.quantity),
       });
-      toast.success('Transferred to shop stock');
+      toast.success('Transferred to shop: purchase recorded and cash paid');
       setTransferForm({ product: '', quantity: '', note: '', date: todayInput() });
       await loadBase();
       await Promise.all([loadMonthly(month), loadYearly(year)]);
@@ -151,9 +155,10 @@ export default function ColdStorage() {
         subtitle="Manage cold storage stock, transfers to shop, and reports"
       />
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label="Products in Cold Storage" value={formatNumber(totals.items)} icon={Snowflake} tone="brand" />
         <StatCard label="Total Quantity" value={formatNumber(totals.qty)} icon={Boxes} tone="emerald" />
+        <StatCard label="Selling Value" value={formatMoney(totals.value)} icon={Wallet} tone="amber" />
         <StatCard label="This Month Added" value={formatNumber(monthly?.summary?.addedQty || 0)} icon={Warehouse} tone="violet" />
       </div>
 
@@ -182,11 +187,13 @@ export default function ColdStorage() {
             <EmptyState icon={Snowflake} title="No stock in cold storage" />
           ) : (
             <div className="table-wrap">
-              <table className="table min-w-[520px]">
+              <table className="table min-w-[640px]">
                 <thead>
                   <tr>
                     <th>Product</th>
                     <th className="text-right">Quantity</th>
+                    <th className="text-right">Selling Price</th>
+                    <th className="text-right">Sell Value</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -194,9 +201,19 @@ export default function ColdStorage() {
                     <tr key={String(item.product)}>
                       <td className="font-semibold text-slate-800">{item.productName}</td>
                       <td className="text-right"><span className="badge-green">{formatNumber(item.quantity)}</span></td>
+                      <td className="text-right">{formatMoney(item.unitCost || 0)}</td>
+                      <td className="text-right font-semibold text-emerald-600">{formatMoney(item.value || 0)}</td>
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t border-slate-100 font-semibold text-slate-800">
+                    <td className="px-4 py-3">Total</td>
+                    <td className="px-4 py-3 text-right">{formatNumber(totals.qty)}</td>
+                    <td className="px-4 py-3" />
+                    <td className="px-4 py-3 text-right text-emerald-600">{formatMoney(totals.value)}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}
@@ -211,7 +228,7 @@ export default function ColdStorage() {
             <form onSubmit={submitAdd} className="space-y-3.5">
               <div>
                 <label className="label">Product</label>
-                <select className="select" value={addForm.product} onChange={(e) => { const p = products.find(x=>x._id===e.target.value); setAddForm(f=>({...f, product: e.target.value, unitCost: p ? p.costPrice : ''})); }} required>
+                <select className="select" value={addForm.product} onChange={(e) => setAddForm(f=>({...f, product: e.target.value}))} required>
                   <option value="">Select product</option>
                   {products.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
                 </select>
@@ -222,9 +239,9 @@ export default function ColdStorage() {
                   <input type="number" min="1" className="input" value={addForm.quantity} onChange={(e)=>setAddForm(f=>({...f, quantity:e.target.value}))} required />
                 </div>
                 <div>
-                  <label className="label">Cost price</label>
+                  <label className="label">Selling price</label>
                   <input type="number" min="0" step="0.01" className="input" value={addForm.unitCost} onChange={(e)=>setAddForm(f=>({...f, unitCost:e.target.value}))} />
-                  <p className="mt-1 text-[10px] text-slate-400">Used to calculate profit automatically</p>
+                  <p className="mt-1 text-[10px] text-slate-400">Shop pays this price when stock is transferred</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -257,7 +274,7 @@ export default function ColdStorage() {
             {entries.length === 0 ? <EmptyState icon={PackagePlus} title="No entries yet" /> : (
               <div className="table-wrap">
                 <table className="table min-w-[640px]">
-                  <thead><tr><th>Date</th><th>Product</th><th className="text-right">Qty</th><th className="text-right">Cost</th><th>Supplier</th></tr></thead>
+                  <thead><tr><th>Date</th><th>Product</th><th className="text-right">Qty</th><th className="text-right">Sell Value</th><th>Supplier</th></tr></thead>
                   <tbody>
                     {entries.map((e) => (
                       <tr key={e._id}>
@@ -308,6 +325,8 @@ export default function ColdStorage() {
               {selectedTransfer && (
                 <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 space-y-1">
                   <div>Cold storage available: <strong>{formatNumber(availableForTransfer)}</strong></div>
+                  <div>Selling price: <strong>{formatMoney(transferUnitPrice)}</strong></div>
+                  <div>Shop purchase value: <strong>{formatMoney(transferValue)}</strong> (paid from cash)</div>
                   <div>Shop stock now: <strong>{formatNumber(selectedTransfer.stockQty || 0)}</strong> → after transfer: <strong>{formatNumber((selectedTransfer.stockQty || 0) + (Number(transferForm.quantity)||0))}</strong></div>
                 </div>
               )}
@@ -322,13 +341,14 @@ export default function ColdStorage() {
             {transfers.length === 0 ? <EmptyState icon={ArrowRightLeft} title="No transfers yet" /> : (
               <div className="table-wrap">
                 <table className="table min-w-[520px]">
-                  <thead><tr><th>Date</th><th>Product</th><th className="text-right">Qty</th><th>By</th></tr></thead>
+                  <thead><tr><th>Date</th><th>Product</th><th className="text-right">Qty</th><th className="text-right">Purchase Value</th><th>By</th></tr></thead>
                   <tbody>
                     {transfers.map((t) => (
                       <tr key={t._id}>
                         <td className="text-slate-500">{formatDate(t.date)}</td>
                         <td className="font-semibold text-slate-800">{t.productName}</td>
                         <td className="text-right">{formatNumber(t.quantity)}</td>
+                        <td className="text-right font-semibold text-slate-800">{formatMoney(t.totalCost || 0)}</td>
                         <td className="text-slate-500">{t.employee?.name || '-'}</td>
                       </tr>
                     ))}
@@ -346,15 +366,15 @@ export default function ColdStorage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatCard label="Added Qty" value={formatNumber(monthly?.summary?.addedQty || 0)} icon={PackagePlus} tone="emerald" />
-            <StatCard label="Added Cost" value={formatMoney(monthly?.summary?.addedCost || 0)} icon={Boxes} tone="brand" />
-            <StatCard label="Transferred Qty" value={formatNumber(monthly?.summary?.transferredQty || 0)} icon={ArrowRightLeft} tone="amber" />
+            <StatCard label="Added Sell Value" value={formatMoney(monthly?.summary?.addedCost || 0)} icon={Boxes} tone="brand" />
+            <StatCard label="Transferred Qty" value={formatNumber(monthly?.summary?.transferredQty || 0)} hint={`${formatMoney(monthly?.summary?.transferredValue || 0)} purchase`} icon={ArrowRightLeft} tone="amber" />
             <StatCard label="Entries" value={formatNumber(monthly?.summary?.addedCount || 0)} icon={Warehouse} tone="violet" />
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="card">
               <div className="border-b border-slate-100 p-4"><h2 className="section-title">Added by Product</h2></div>
               <div className="table-wrap">
-                <table className="table"><thead><tr><th>Product</th><th className="text-right">Qty</th><th className="text-right">Cost</th></tr></thead>
+                <table className="table"><thead><tr><th>Product</th><th className="text-right">Qty</th><th className="text-right">Sell Value</th></tr></thead>
                 <tbody>
                   {(monthly?.addedByProduct || []).length === 0 ? <tr><td colSpan={3} className="text-center text-slate-400">No data</td></tr> :
                   monthly.addedByProduct.map((r)=> <tr key={String(r._id)}><td>{r.name}</td><td className="text-right">{formatNumber(r.quantity)}</td><td className="text-right">{formatMoney(r.totalCost)}</td></tr>)}
@@ -364,10 +384,10 @@ export default function ColdStorage() {
             <div className="card">
               <div className="border-b border-slate-100 p-4"><h2 className="section-title">Transferred by Product</h2></div>
               <div className="table-wrap">
-                <table className="table"><thead><tr><th>Product</th><th className="text-right">Qty</th></tr></thead>
+                <table className="table"><thead><tr><th>Product</th><th className="text-right">Qty</th><th className="text-right">Purchase Value</th></tr></thead>
                 <tbody>
-                  {(monthly?.transferredByProduct || []).length === 0 ? <tr><td colSpan={2} className="text-center text-slate-400">No data</td></tr> :
-                  monthly.transferredByProduct.map((r)=> <tr key={String(r._id)}><td>{r.name}</td><td className="text-right">{formatNumber(r.quantity)}</td></tr>)}
+                  {(monthly?.transferredByProduct || []).length === 0 ? <tr><td colSpan={3} className="text-center text-slate-400">No data</td></tr> :
+                  monthly.transferredByProduct.map((r)=> <tr key={String(r._id)}><td>{r.name}</td><td className="text-right">{formatNumber(r.quantity)}</td><td className="text-right">{formatMoney(r.totalCost || 0)}</td></tr>)}
                 </tbody></table>
               </div>
             </div>
@@ -381,17 +401,17 @@ export default function ColdStorage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <StatCard label="Added Qty (Year)" value={formatNumber(yearly?.summary?.addedQty || 0)} icon={PackagePlus} tone="emerald" />
-            <StatCard label="Added Cost (Year)" value={formatMoney(yearly?.summary?.addedCost || 0)} icon={Boxes} tone="brand" />
-            <StatCard label="Transferred Qty (Year)" value={formatNumber(yearly?.summary?.transferredQty || 0)} icon={ArrowRightLeft} tone="amber" />
+            <StatCard label="Added Sell Value (Year)" value={formatMoney(yearly?.summary?.addedCost || 0)} icon={Boxes} tone="brand" />
+            <StatCard label="Transferred Qty (Year)" value={formatNumber(yearly?.summary?.transferredQty || 0)} hint={`${formatMoney(yearly?.summary?.transferredValue || 0)} purchase`} icon={ArrowRightLeft} tone="amber" />
           </div>
           <div className="card">
             <div className="border-b border-slate-100 p-4"><h2 className="section-title">Monthly Breakdown - {yearly?.year || year}</h2></div>
             <div className="table-wrap">
               <table className="table min-w-[560px]">
-                <thead><tr><th>Month</th><th className="text-right">Added Qty</th><th className="text-right">Added Cost</th><th className="text-right">Transferred Qty</th></tr></thead>
+                <thead><tr><th>Month</th><th className="text-right">Added Qty</th><th className="text-right">Added Sell Value</th><th className="text-right">Transferred Qty</th><th className="text-right">Purchase Value</th></tr></thead>
                 <tbody>
-                  {(yearly?.monthly || []).length === 0 ? <tr><td colSpan={4} className="text-center text-slate-400">No data</td></tr> :
-                  yearly.monthly.map((m)=> <tr key={m.month}><td>{m.month}</td><td className="text-right">{formatNumber(m.addedQty)}</td><td className="text-right">{formatMoney(m.addedCost)}</td><td className="text-right">{formatNumber(m.transferredQty)}</td></tr>)}
+                  {(yearly?.monthly || []).length === 0 ? <tr><td colSpan={5} className="text-center text-slate-400">No data</td></tr> :
+                  yearly.monthly.map((m)=> <tr key={m.month}><td>{m.month}</td><td className="text-right">{formatNumber(m.addedQty)}</td><td className="text-right">{formatMoney(m.addedCost)}</td><td className="text-right">{formatNumber(m.transferredQty)}</td><td className="text-right">{formatMoney(m.transferredValue || 0)}</td></tr>)}
                 </tbody>
               </table>
             </div>

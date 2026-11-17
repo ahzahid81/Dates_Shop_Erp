@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const StockEntry = require('../models/StockEntry');
+const CashTransaction = require('../models/CashTransaction');
 const ColdStorageEntry = require('../models/ColdStorageEntry');
 const ColdStorageTransfer = require('../models/ColdStorageTransfer');
 const asyncHandler = require('../utils/asyncHandler');
@@ -18,20 +20,33 @@ const getStockList = asyncHandler(async (req, res) => {
     ]),
   ]);
   const outMap = new Map(transferred.map((t) => [String(t._id), t.quantity]));
+  const round = (value) => Number(value.toFixed(2));
   const items = added
     .map((a) => {
       const out = outMap.get(String(a._id)) || 0;
       const qty = a.quantity - out;
+      const unitCost = a.quantity > 0 ? a.totalCost / a.quantity : 0;
       return {
         product: a._id,
         productName: a.productName,
         quantity: qty,
+        unitCost: round(unitCost),
+        value: round(qty * unitCost),
         totalCost: a.totalCost,
       };
     })
     .filter((i) => i.quantity > 0)
     .sort((a, b) => a.productName.localeCompare(b.productName));
-  res.json({ items });
+  const summary = items.reduce(
+    (acc, item) => ({
+      items: acc.items + 1,
+      quantity: acc.quantity + item.quantity,
+      value: acc.value + item.value,
+    }),
+    { items: 0, quantity: 0, value: 0 }
+  );
+  summary.value = round(summary.value);
+  res.json({ items, summary });
 });
 
 const listEntries = asyncHandler(async (req, res) => {
@@ -131,25 +146,63 @@ const createTransfer = asyncHandler(async (req, res) => {
 
   const previousQty = product.stockQty || 0;
   const previousCost = product.costPrice || 0;
-  const coldUnitCost = addedQty > 0 ? addedCost / addedQty : previousCost;
+  const round = (value) => Number(value.toFixed(2));
+  const coldUnitCost = addedQty > 0 ? round(addedCost / addedQty) : round(previousCost);
+  const transferCost = round(qty * coldUnitCost);
+  const transferDate = date ? new Date(date) : new Date();
   const newQty = previousQty + qty;
   product.stockQty = newQty;
   product.costPrice = newQty > 0
-    ? Number(((previousQty * previousCost + qty * coldUnitCost) / newQty).toFixed(2))
-    : Number(coldUnitCost.toFixed(2));
+    ? round((previousQty * previousCost + qty * coldUnitCost) / newQty)
+    : round(coldUnitCost);
   await product.save();
 
   let transfer;
+  let stockEntry;
+  let cashTransaction;
   try {
     transfer = await ColdStorageTransfer.create({
       product: product._id,
       productName: product.name,
       quantity: qty,
+      unitCost: coldUnitCost,
+      totalCost: transferCost,
       note,
-      date: date ? new Date(date) : new Date(),
+      date: transferDate,
       employee: req.user._id,
     });
+
+    stockEntry = await StockEntry.create({
+      product: product._id,
+      productName: product.name,
+      quantity: qty,
+      unitCost: coldUnitCost,
+      totalCost: transferCost,
+      supplier: 'Cold Storage',
+      note: note || 'Transferred from cold storage',
+      paid: true,
+      paymentMethod: 'cash',
+      employee: req.user._id,
+      date: transferDate,
+    });
+
+    if (transferCost > 0) {
+      cashTransaction = await CashTransaction.create({
+        type: 'out',
+        amount: transferCost,
+        source: 'stock',
+        reference: stockEntry._id,
+        referenceModel: 'StockEntry',
+        description: `Cold storage purchase: ${product.name} x ${qty}`,
+        paymentMethod: 'cash',
+        employee: req.user._id,
+        date: transferDate,
+      });
+    }
   } catch (error) {
+    if (cashTransaction) await CashTransaction.findByIdAndDelete(cashTransaction._id);
+    if (stockEntry) await StockEntry.findByIdAndDelete(stockEntry._id);
+    if (transfer) await ColdStorageTransfer.findByIdAndDelete(transfer._id);
     product.stockQty = previousQty;
     product.costPrice = previousCost;
     await product.save();
@@ -160,10 +213,11 @@ const createTransfer = asyncHandler(async (req, res) => {
     action: 'COLD_STORAGE_TRANSFER',
     entity: 'ColdStorageTransfer',
     entityId: transfer._id,
-    description: `Transferred ${qty} ${product.name} from cold storage to shop`,
+    description: `Transferred ${qty} ${product.name} from cold storage to shop at ${coldUnitCost} each (cash paid)`,
+    meta: { unitCost: coldUnitCost, totalCost: transferCost, stockEntryId: stockEntry._id },
   });
 
-  res.status(201).json({ transfer, product });
+  res.status(201).json({ transfer, product, stockEntry, cashTransaction });
 });
 
 const monthlyReport = asyncHandler(async (req, res) => {
@@ -177,7 +231,7 @@ const monthlyReport = asyncHandler(async (req, res) => {
     ]),
     ColdStorageTransfer.aggregate([
       { $match: { date: { $gte: start, $lt: end } } },
-      { $group: { _id: null, quantity: { $sum: '$quantity' }, count: { $sum: 1 } } },
+      { $group: { _id: null, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' }, count: { $sum: 1 } } },
     ]),
     ColdStorageEntry.aggregate([
       { $match: { date: { $gte: start, $lt: end } } },
@@ -186,7 +240,7 @@ const monthlyReport = asyncHandler(async (req, res) => {
     ]),
     ColdStorageTransfer.aggregate([
       { $match: { date: { $gte: start, $lt: end } } },
-      { $group: { _id: '$product', name: { $first: '$productName' }, quantity: { $sum: '$quantity' } } },
+      { $group: { _id: '$product', name: { $first: '$productName' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
       { $sort: { quantity: -1 } },
     ]),
   ]);
@@ -198,6 +252,7 @@ const monthlyReport = asyncHandler(async (req, res) => {
       addedCost: added[0]?.totalCost || 0,
       addedCount: added[0]?.count || 0,
       transferredQty: transferred[0]?.quantity || 0,
+      transferredValue: transferred[0]?.totalCost || 0,
       transferredCount: transferred[0]?.count || 0,
     },
     addedByProduct,
@@ -217,19 +272,26 @@ const yearlyReport = asyncHandler(async (req, res) => {
       { $sort: { _id: 1 } },
     ]),
     ColdStorageEntry.aggregate([{ $match: { date: { $gte: start, $lt: end } } }, { $group: { _id: null, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } }]),
-    ColdStorageTransfer.aggregate([{ $match: { date: { $gte: start, $lt: end } } }, { $group: { _id: null, quantity: { $sum: '$quantity' } } }]),
+    ColdStorageTransfer.aggregate([{ $match: { date: { $gte: start, $lt: end } } }, { $group: { _id: null, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } }]),
   ]);
 
   const transferMonthly = await ColdStorageTransfer.aggregate([
     { $match: { date: { $gte: start, $lt: end } } },
-    { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$date', timezone: TZ } }, transferredQty: { $sum: '$quantity' } } },
+    { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$date', timezone: TZ } }, transferredQty: { $sum: '$quantity' }, transferredValue: { $sum: '$totalCost' } } },
   ]);
   const aMap = new Map(monthly.map((m) => [m._id, m]));
-  const tMap = new Map(transferMonthly.map((t) => [t._id, t.transferredQty]));
+  const tMap = new Map(transferMonthly.map((t) => [t._id, t]));
   const months = Array.from(new Set([...aMap.keys(), ...tMap.keys()])).sort();
   const merged = months.map((key) => {
     const added = aMap.get(key);
-    return { month: key, addedQty: added?.addedQty || 0, addedCost: added?.addedCost || 0, transferredQty: tMap.get(key) || 0 };
+    const transferred = tMap.get(key);
+    return {
+      month: key,
+      addedQty: added?.addedQty || 0,
+      addedCost: added?.addedCost || 0,
+      transferredQty: transferred?.transferredQty || 0,
+      transferredValue: transferred?.transferredValue || 0,
+    };
   });
 
   res.json({
@@ -238,6 +300,7 @@ const yearlyReport = asyncHandler(async (req, res) => {
       addedQty: summaryAdded[0]?.quantity || 0,
       addedCost: summaryAdded[0]?.totalCost || 0,
       transferredQty: summaryTransferred[0]?.quantity || 0,
+      transferredValue: summaryTransferred[0]?.totalCost || 0,
     },
     monthly: merged,
   });
