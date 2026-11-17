@@ -143,7 +143,7 @@ export default function Stock() {
                 <option value="">{t('sales.selectProductPlaceholder')}</option>
                 {products.map((product) => (
                   <option key={product._id} value={product._id}>
-                    {product.name} ({product.stockQty} {product.unit})
+                    {product.name} ({product.stockQty})
                   </option>
                 ))}
               </select>

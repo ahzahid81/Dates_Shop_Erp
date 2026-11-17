@@ -39,7 +39,7 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, sku, category, description, unit, costPrice, sellPrice, stockQty, lowStockThreshold } = req.body;
+  const { name, sku, category, description, unit, costPrice, stockQty, lowStockThreshold } = req.body;
   const generatedSku = sku && String(sku).trim() ? String(sku).toUpperCase().trim() : await nextSku();
 
   const product = await Product.create({
@@ -48,10 +48,9 @@ const createProduct = asyncHandler(async (req, res) => {
     category,
     description,
     unit,
-    costPrice,
-    sellPrice,
+    costPrice: Number(costPrice) || 0,
     stockQty: Number(stockQty) || 0,
-    lowStockThreshold,
+    lowStockThreshold: lowStockThreshold !== undefined ? Number(lowStockThreshold) : 5,
   });
 
   await writeAudit(req, {
@@ -59,7 +58,7 @@ const createProduct = asyncHandler(async (req, res) => {
     entity: 'Product',
     entityId: product._id,
     description: `Created product ${product.name} (${product.sku})`,
-    meta: { stockQty: product.stockQty, costPrice: product.costPrice, sellPrice: product.sellPrice },
+    meta: { stockQty: product.stockQty, costPrice: product.costPrice },
   });
 
   res.status(201).json({ product });
@@ -69,7 +68,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: 'Product not found' });
 
-  const fields = ['name', 'category', 'description', 'unit', 'costPrice', 'sellPrice', 'lowStockThreshold', 'isActive'];
+  const fields = ['name', 'category', 'description', 'unit', 'costPrice', 'lowStockThreshold', 'isActive'];
   fields.forEach((field) => {
     if (req.body[field] !== undefined) product[field] = req.body[field];
   });

@@ -10,6 +10,7 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Stock from './pages/Stock';
+import ColdStorage from './pages/ColdStorage';
 import NewSale from './pages/NewSale';
 import Sales from './pages/Sales';
 import Expenses from './pages/Expenses';
@@ -75,6 +76,7 @@ function AppRoutes() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="stock" element={<Stock />} />
+          <Route path="cold-storage" element={<ColdStorage />} />
           <Route path="sales" element={<Sales />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="quotations" element={<Quotations />} />

@@ -8,16 +8,16 @@ const CashTransaction = require('./models/CashTransaction');
 const { nextSku } = require('./utils/sequence');
 
 const SAMPLE_PRODUCTS = [
-  { name: 'Premium Medjool Dates', category: 'Dates', unit: 'kg', costPrice: 850, sellPrice: 1100, stockQty: 40, threshold: 10 },
-  { name: 'Ajwa Dates', category: 'Dates', unit: 'kg', costPrice: 1200, sellPrice: 1500, stockQty: 30, threshold: 8 },
-  { name: 'Sukkari Dates', category: 'Dates', unit: 'kg', costPrice: 620, sellPrice: 850, stockQty: 50, threshold: 10 },
-  { name: 'Golden Raisins', category: 'Dry Fruits', unit: 'kg', costPrice: 400, sellPrice: 550, stockQty: 25, threshold: 6 },
-  { name: 'Cashew Nuts', category: 'Dry Fruits', unit: 'kg', costPrice: 1050, sellPrice: 1350, stockQty: 20, threshold: 5 },
-  { name: 'Almonds', category: 'Dry Fruits', unit: 'kg', costPrice: 900, sellPrice: 1200, stockQty: 35, threshold: 8 },
-  { name: 'Pistachios', category: 'Dry Fruits', unit: 'kg', costPrice: 1500, sellPrice: 1900, stockQty: 15, threshold: 5 },
-  { name: 'Date Gift Box (Large)', category: 'Gift Box', unit: 'box', costPrice: 1800, sellPrice: 2400, stockQty: 12, threshold: 4 },
-  { name: 'Date Gift Box (Small)', category: 'Gift Box', unit: 'box', costPrice: 950, sellPrice: 1300, stockQty: 18, threshold: 5 },
-  { name: 'Honey 500g', category: 'Others', unit: 'jar', costPrice: 550, sellPrice: 750, stockQty: 22, threshold: 6 },
+  { name: 'Premium Medjool Dates', category: 'Dates', unit: 'pcs', costPrice: 850, stockQty: 40, threshold: 5 },
+  { name: 'Ajwa Dates', category: 'Dates', unit: 'pcs', costPrice: 1200, stockQty: 30, threshold: 5 },
+  { name: 'Sukkari Dates', category: 'Dates', unit: 'pcs', costPrice: 620, stockQty: 50, threshold: 5 },
+  { name: 'Golden Raisins', category: 'Dry Fruits', unit: 'pcs', costPrice: 400, stockQty: 25, threshold: 5 },
+  { name: 'Cashew Nuts', category: 'Dry Fruits', unit: 'pcs', costPrice: 1050, stockQty: 20, threshold: 5 },
+  { name: 'Almonds', category: 'Dry Fruits', unit: 'pcs', costPrice: 900, stockQty: 35, threshold: 5 },
+  { name: 'Pistachios', category: 'Dry Fruits', unit: 'pcs', costPrice: 1500, stockQty: 15, threshold: 5 },
+  { name: 'Date Gift Box (Large)', category: 'Gift Box', unit: 'box', costPrice: 1800, stockQty: 12, threshold: 5 },
+  { name: 'Date Gift Box (Small)', category: 'Gift Box', unit: 'box', costPrice: 950, stockQty: 18, threshold: 5 },
+  { name: 'Honey 500g', category: 'Others', unit: 'jar', costPrice: 550, stockQty: 22, threshold: 5 },
 ];
 
 const seed = async () => {
@@ -60,7 +60,6 @@ const seed = async () => {
           category: item.category,
           unit: item.unit,
           costPrice: item.costPrice,
-          sellPrice: item.sellPrice,
           stockQty: 0,
           lowStockThreshold: item.threshold,
           description: 'Demo product created by seed script',

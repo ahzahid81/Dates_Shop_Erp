@@ -99,12 +99,11 @@ export default function MonthlySummary() {
           trend={s.change.sales}
         />
         <StatCard
-          label={t('monthly.grossProfit')}
-          value={formatMoney(s.grossProfit)}
-          hint={`${t('monthly.margin')}: ${s.margin}%`}
+          label={t('monthly.netProfit')}
+          value={formatMoney(s.netProfit)}
           icon={TrendingUp}
-          tone="emerald"
-          trend={s.change.profit}
+          tone="violet"
+          trend={s.change.netProfit}
         />
         <StatCard
           label={t('monthly.expenses')}
@@ -117,9 +116,8 @@ export default function MonthlySummary() {
         <StatCard
           label={t('monthly.netProfit')}
           value={formatMoney(s.netProfit)}
-          hint={`${t('monthly.margin')}: ${s.margin}%`}
-          icon={Wallet}
-          tone="amber"
+          icon={TrendingUp}
+          tone="violet"
           trend={s.change.netProfit}
         />
       </div>

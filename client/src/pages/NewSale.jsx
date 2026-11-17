@@ -102,7 +102,7 @@ export default function NewSale() {
           unit: product.unit,
           stockQty: product.stockQty,
           quantity: 1,
-          unitPrice: product.sellPrice,
+          unitPrice: '',
         },
       ];
     });
@@ -116,6 +116,7 @@ export default function NewSale() {
           const qty = Math.max(Math.min(Number(value) || 1, item.stockQty), 1);
           return { ...item, quantity: qty };
         }
+        if (value === '') return { ...item, unitPrice: '' };
         return { ...item, unitPrice: Math.max(Number(value) || 0, 0) };
       })
     );
@@ -127,6 +128,10 @@ export default function NewSale() {
     event.preventDefault();
     if (cart.length === 0) {
       toast.error(t('sales.emptyCart'));
+      return;
+    }
+    if (cart.some((item) => item.unitPrice === '' || Number(item.unitPrice) <= 0)) {
+      toast.error(t('sales.unitPrice'));
       return;
     }
     setSaving(true);
@@ -245,7 +250,7 @@ export default function NewSale() {
                   </p>
                   <p className="mt-0.5 text-[10px] text-slate-400">{product.sku}</p>
                   <div className="mt-2 flex items-end justify-between">
-                    <p className="text-sm font-bold text-brand-700">{formatMoney(product.sellPrice)}</p>
+                    <p className="text-sm font-bold text-brand-700">{formatMoney(product.costPrice)}</p>
                     <span className={`text-[10px] font-semibold ${product.stockQty <= product.lowStockThreshold ? 'text-amber-600' : 'text-slate-400'}`}>
                       {formatNumber(product.stockQty)} {product.unit}
                     </span>
@@ -329,6 +334,7 @@ export default function NewSale() {
                             type="number"
                             min="0"
                             step="0.01"
+                            placeholder={t('sales.unitPrice')}
                             value={item.unitPrice}
                             onChange={(e) => updateItem(item.product, 'unitPrice', e.target.value)}
                             className="w-full min-w-0 border-0 bg-transparent text-xs font-semibold outline-none"

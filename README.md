@@ -1,6 +1,6 @@
 # Dates Shop ERP
 
-A complete, modern, mobile-responsive Shop ERP built with the MERN stack. It ships with a bilingual (English / বাংলা) interface, role-based access, POS sales, stock and cash tracking, profit reports, statements, invoices, quotations, audit logs and printable/PDF documents.
+A complete, modern, mobile-responsive Shop ERP built with the MERN stack. It ships with a bilingual (English / বাংলা) interface, role-based access, POS sales, shop and cold-storage stock, cash tracking, profit reports, statements, invoices, quotations, audit logs and printable/PDF documents.
 
 - **Backend:** Node.js, Express, MongoDB (Mongoose), JWT, bcryptjs
 - **Frontend:** React 18, Vite, Tailwind CSS, Recharts, lucide-react
@@ -16,15 +16,16 @@ A complete, modern, mobile-responsive Shop ERP built with the MERN stack. It shi
 | --- | --- |
 | Authentication | Single login for admin and employee, JWT bearer tokens, bcrypt password hashing, rate-limited login |
 | Employee portal | Large **Sell** and **Debit/Expense** actions, plus own-sales invoices |
-| Products | Add, edit, delete/archive products with SKU, category, unit, cost/sell price and low-stock alerts |
+| Products | Add, edit, delete/archive products with SKU, category, unit, cost price and low-stock alerts |
 | Stock | Stock-in entries automatically increase product quantity and record cash movement |
+| Cold storage | Add stock, view cold-storage stock, transfer to shop (automatically updates shop stock and cost), monthly and yearly reports |
 | Sales / POS | Multi-item cart, custom selling price, discount, paid/due handling, automatic stock deduction, rollback on failure |
 | Expenses / Debit | Record expense title, category, amount, date and employee (cash payment) |
 | Invoices | Professional printable invoice with due-payment collection and PDF download |
 | Quotations | Create, edit, print, download and track quotation status |
 | Cash management | Real-time cash balance, manual cash in/out adjustments and transaction history |
 | Summaries | Daily and monthly sales, expenses, purchases, cash and profit with charts |
-| Profit reports | Product-wise and overall revenue, cost, gross/net profit and margins |
+| Profit reports | Product-wise and overall revenue, cost, gross/net profit |
 | Statements | Date-range transaction statement with employee filter and CSV export |
 | Audit logs | Immutable trail of logins, sales, payments, stock, expenses, quotations, user and cash changes |
 | Users | Admin-only user management (create, edit, activate/deactivate, reset password) |
@@ -46,7 +47,7 @@ Dates_Shop/
 │  ├─ server.js              # Express entry + static client hosting
 │  ├─ seed.js                # admin/employee/sample product seeding
 │  ├─ config/db.js           # Mongoose connection
-│  ├─ models/                # User, Product, Sale, StockEntry, Expense, CashTransaction, Quotation, AuditLog, Counter
+│  ├─ models/                # User, Product, Sale, StockEntry, ColdStorageEntry, ColdStorageTransfer, Expense, CashTransaction, Quotation, AuditLog, Counter
 │  ├─ controllers/           # business logic
 │  ├─ routes/                # REST endpoints
 │  ├─ middleware/            # auth, validation, error handling
@@ -226,6 +227,11 @@ All `/api` routes except health and login require `Authorization: Bearer <token>
 | `DELETE` | `/api/products/:id` | Admin |
 | `GET` | `/api/stock` | Admin |
 | `POST` | `/api/stock` | Admin |
+| `GET` | `/api/cold-storage/stock` | Admin |
+| `GET` / `POST` | `/api/cold-storage/entries` | Admin |
+| `GET` / `POST` | `/api/cold-storage/transfers` | Admin |
+| `GET` | `/api/cold-storage/reports/monthly` | Admin |
+| `GET` | `/api/cold-storage/reports/yearly` | Admin |
 
 ### Sales, expenses, quotations
 | Method | Endpoint | Access |

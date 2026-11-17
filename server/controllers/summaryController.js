@@ -223,7 +223,6 @@ const monthlySummary = asyncHandler(async (req, res) => {
       stockCount: st.count,
       grossProfit: s.profit,
       netProfit: Number((s.profit - e.amount).toFixed(2)),
-      margin: s.sales ? Number(((s.profit / s.sales) * 100).toFixed(2)) : 0,
       cashIn: cash.cashIn,
       cashOut: cash.cashOut,
       cashBalance: balance,
@@ -456,7 +455,6 @@ const profitReport = asyncHandler(async (req, res) => {
     revenue: Number(p.revenue.toFixed(2)),
     cost: Number(p.cost.toFixed(2)),
     profit: Number(p.profit.toFixed(2)),
-    margin: p.revenue ? Number(((p.profit / p.revenue) * 100).toFixed(2)) : 0,
   }));
 
   res.json({
@@ -467,8 +465,6 @@ const profitReport = asyncHandler(async (req, res) => {
       grossProfit: o.profit,
       expenses,
       netProfit: Number((o.profit - expenses).toFixed(2)),
-      margin: o.revenue ? Number(((o.profit / o.revenue) * 100).toFixed(2)) : 0,
-      netMargin: o.revenue ? Number((((o.profit - expenses) / o.revenue) * 100).toFixed(2)) : 0,
       salesCount: o.count,
       itemsSold: o.items,
     },

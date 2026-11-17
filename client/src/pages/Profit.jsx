@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, Banknote, Package, Percent, RefreshCw, TrendingUp, Wallet } from 'lucide-react';
+import { BarChart3, Banknote, Package, RefreshCw, TrendingUp, Wallet } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -82,27 +82,19 @@ export default function Profit() {
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label={t('profit.revenue')} value={formatMoney(overall.revenue)} hint={`${overall.salesCount} ${t('daily.transactions')}`} icon={BarChart3} tone="brand" />
-        <StatCard label={t('profit.grossProfit')} value={formatMoney(overall.grossProfit)} hint={`${t('profit.margin')}: ${overall.margin}%`} icon={TrendingUp} tone="emerald" />
+        <StatCard label={t('profit.grossProfit')} value={formatMoney(overall.grossProfit)} icon={TrendingUp} tone="emerald" />
         <StatCard label={t('profit.expenses')} value={formatMoney(overall.expenses)} hint={t('daily.expenses')} icon={Banknote} tone="rose" />
-        <StatCard label={t('profit.netProfit')} value={formatMoney(overall.netProfit)} hint={`${t('profit.netMargin')}: ${overall.netMargin}%`} icon={Wallet} tone="amber" />
+        <StatCard label={t('profit.netProfit')} value={formatMoney(overall.netProfit)} icon={Wallet} tone="amber" />
       </div>
 
-      <div className="card mb-4 grid grid-cols-2 divide-x divide-slate-100 sm:grid-cols-4">
+      <div className="card mb-4 grid grid-cols-2 divide-x divide-slate-100 sm:grid-cols-2">
         <div className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('profit.cost')}</p>
           <p className="mt-1 text-base font-bold text-slate-800">{formatMoney(overall.cost)}</p>
         </div>
         <div className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('profit.margin')}</p>
-          <p className="mt-1 text-base font-bold text-emerald-600">{overall.margin}%</p>
-        </div>
-        <div className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('profit.itemsSold')}</p>
           <p className="mt-1 text-base font-bold text-slate-800">{formatNumber(overall.itemsSold)}</p>
-        </div>
-        <div className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('profit.netMargin')}</p>
-          <p className="mt-1 text-base font-bold text-slate-900">{overall.netMargin}%</p>
         </div>
       </div>
 
@@ -158,8 +150,8 @@ export default function Profit() {
                     <th>{t('profit.product')}</th>
                     <th className="text-right">{t('profit.qty')}</th>
                     <th className="text-right">{t('profit.revenue')}</th>
+                    <th className="text-right">{t('profit.cost')}</th>
                     <th className="text-right">{t('profit.profitCol')}</th>
-                    <th className="text-right">{t('profit.marginCol')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,20 +163,8 @@ export default function Profit() {
                       </td>
                       <td className="text-right">{formatNumber(product.quantity)}</td>
                       <td className="text-right">{formatMoney(product.revenue)}</td>
+                      <td className="text-right">{formatMoney(product.cost)}</td>
                       <td className="text-right font-semibold text-emerald-600">{formatMoney(product.profit)}</td>
-                      <td className="text-right">
-                        <span
-                          className={`badge ${
-                            product.margin >= 30
-                              ? 'badge-green'
-                              : product.margin >= 15
-                              ? 'badge-amber'
-                              : 'badge-red'
-                          }`}
-                        >
-                          {product.margin}%
-                        </span>
-                      </td>
                     </tr>
                   ))}
                 </tbody>

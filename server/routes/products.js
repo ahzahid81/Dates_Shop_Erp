@@ -22,8 +22,9 @@ router.post(
   '/',
   authorize('admin'),
   body('name').trim().isLength({ min: 2 }).withMessage('Product name is required'),
-  body('sellPrice').isFloat({ min: 0 }).withMessage('Selling price must be valid'),
   body('costPrice').optional().isFloat({ min: 0 }).withMessage('Cost price must be valid'),
+  body('stockQty').optional().isFloat({ min: 0 }).withMessage('Stock must be valid'),
+  body('lowStockThreshold').optional().isFloat({ min: 0 }).withMessage('Low stock alert must be valid'),
   validate,
   createProduct
 );

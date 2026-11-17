@@ -7,7 +7,6 @@ import {
   Plus,
   Search,
   Trash2,
-  TrendingUp,
   Wallet,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -24,9 +23,8 @@ const EMPTY_FORM = {
   name: '',
   sku: '',
   category: 'Dates',
-  unit: 'kg',
+  unit: 'pcs',
   costPrice: '',
-  sellPrice: '',
   lowStockThreshold: 5,
   description: '',
 };
@@ -46,7 +44,6 @@ function ProductForm({ open, onClose, product, onSaved }) {
               category: product.category || 'General',
               unit: product.unit || 'pcs',
               costPrice: product.costPrice ?? '',
-              sellPrice: product.sellPrice ?? '',
               lowStockThreshold: product.lowStockThreshold ?? 5,
               description: product.description || '',
             }
@@ -57,13 +54,6 @@ function ProductForm({ open, onClose, product, onSaved }) {
 
   const set = (key) => (event) => setForm((prev) => ({ ...prev, [key]: event.target.value }));
 
-  const margin = useMemo(() => {
-    const sell = Number(form.sellPrice) || 0;
-    const cost = Number(form.costPrice) || 0;
-    if (!sell) return 0;
-    return ((sell - cost) / sell) * 100;
-  }, [form.sellPrice, form.costPrice]);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -71,8 +61,7 @@ function ProductForm({ open, onClose, product, onSaved }) {
       const payload = {
         ...form,
         costPrice: Number(form.costPrice) || 0,
-        sellPrice: Number(form.sellPrice) || 0,
-        lowStockThreshold: Number(form.lowStockThreshold) || 0,
+        lowStockThreshold: form.lowStockThreshold === '' ? 5 : Number(form.lowStockThreshold),
       };
       if (product) {
         await api.put(`/products/${product._id}`, payload);
@@ -124,7 +113,7 @@ function ProductForm({ open, onClose, product, onSaved }) {
         <div>
           <label className="label">{t('products.unit')}</label>
           <select className="select" value={form.unit} onChange={set('unit')}>
-            {['kg', 'pcs', 'box', 'jar', 'pack', 'gram', 'litre'].map((unit) => (
+            {['pcs', 'box', 'jar', 'pack', 'gram', 'litre'].map((unit) => (
               <option key={unit} value={unit}>
                 {unit}
               </option>
@@ -132,7 +121,7 @@ function ProductForm({ open, onClose, product, onSaved }) {
           </select>
         </div>
         <div>
-          <label className="label">{t('products.lowThreshold')}</label>
+          <label className="label">Low stock alert at</label>
           <input
             type="number"
             min="0"
@@ -141,8 +130,8 @@ function ProductForm({ open, onClose, product, onSaved }) {
             onChange={set('lowStockThreshold')}
           />
         </div>
-        <div>
-          <label className="label">{t('products.costPrice')}</label>
+        <div className="sm:col-span-2">
+          <label className="label">Cost price</label>
           <input
             type="number"
             min="0"
@@ -152,26 +141,11 @@ function ProductForm({ open, onClose, product, onSaved }) {
             onChange={set('costPrice')}
             required
           />
-          <p className="mt-1 text-[10px] text-slate-400">{t('products.costHint')}</p>
-        </div>
-        <div>
-          <label className="label">{t('products.sellPrice')}</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            className="input"
-            value={form.sellPrice}
-            onChange={set('sellPrice')}
-            required
-          />
-          <p className={`mt-1 text-[10px] font-semibold ${margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {t('products.margin')}: {margin.toFixed(1)}%
-          </p>
+          <p className="mt-1 text-[10px] text-slate-400">Used to calculate profit automatically</p>
         </div>
         <div className="sm:col-span-2">
           <label className="label">
-            {t('products.description')} <span className="font-normal normal-case text-slate-400">({t('common.optional')})</span>
+            Description (optional)
           </label>
           <textarea className="textarea" value={form.description} onChange={set('description')} rows={3} />
         </div>
@@ -220,13 +194,8 @@ export default function Products() {
 
   const stats = useMemo(() => {
     const stockValue = products.reduce((sum, p) => sum + p.stockQty * p.costPrice, 0);
-    const low = products.filter((p) => p.stockQty <= p.lowStockThreshold);
-    const avgMargin =
-      products.length > 0
-        ? products.reduce((sum, p) => sum + (p.sellPrice ? ((p.sellPrice - p.costPrice) / p.sellPrice) * 100 : 0), 0) /
-          products.length
-        : 0;
-    return { stockValue, low, avgMargin };
+    const low = products.filter((p) => p.stockQty <= (p.lowStockThreshold ?? 5));
+    return { stockValue, low };
   }, [products]);
 
   const handleDelete = async () => {
@@ -255,11 +224,10 @@ export default function Products() {
         }
       />
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <StatCard label={t('products.total') || 'Products'} value={formatNumber(products.length)} icon={Package} tone="brand" />
         <StatCard label={t('products.stockValue')} value={formatMoney(stats.stockValue)} icon={Wallet} tone="emerald" />
         <StatCard label={t('stock.lowStockCount')} value={formatNumber(stats.low.length)} icon={Boxes} tone="amber" />
-        <StatCard label={t('products.margin')} value={`${stats.avgMargin.toFixed(1)}%`} icon={TrendingUp} tone="violet" />
       </div>
 
       <div className="card">
@@ -316,19 +284,15 @@ export default function Products() {
                   <tr>
                     <th>{t('common.product')}</th>
                     <th>{t('common.category')}</th>
-                    <th className="text-right">{t('products.costPrice')}</th>
-                    <th className="text-right">{t('products.sellPrice')}</th>
-                    <th className="text-right">{t('products.margin')}</th>
+                    <th className="text-right">Cost price</th>
                     <th className="text-right">{t('common.stock')}</th>
+                    <th className="text-right">Low stock alert at</th>
                     <th className="text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {products.map((product) => {
-                    const margin = product.sellPrice
-                      ? ((product.sellPrice - product.costPrice) / product.sellPrice) * 100
-                      : 0;
-                    const low = product.stockQty <= product.lowStockThreshold;
+                    const low = product.stockQty <= (product.lowStockThreshold ?? 5);
                     return (
                       <tr key={product._id}>
                         <td>
@@ -339,17 +303,12 @@ export default function Products() {
                           <span className="badge-slate">{product.category}</span>
                         </td>
                         <td className="text-right">{formatMoney(product.costPrice)}</td>
-                        <td className="text-right font-semibold text-slate-800">{formatMoney(product.sellPrice)}</td>
-                        <td className="text-right">
-                          <span className={margin >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>
-                            {margin.toFixed(1)}%
-                          </span>
-                        </td>
                         <td className="text-right">
                           <span className={low ? 'badge-amber' : 'badge-green'}>
                             {formatNumber(product.stockQty)} {product.unit}
                           </span>
                         </td>
+                        <td className="text-right">{formatNumber(product.lowStockThreshold ?? 5)}</td>
                         <td>
                           <div className="flex items-center justify-end gap-1">
                             <button
@@ -376,38 +335,28 @@ export default function Products() {
                 </tbody>
               </table>
             </div>
-
             <div className="space-y-2 p-3 md:hidden">
               {products.map((product) => {
-                const margin = product.sellPrice
-                  ? ((product.sellPrice - product.costPrice) / product.sellPrice) * 100
-                  : 0;
-                const low = product.stockQty <= product.lowStockThreshold;
+                const low = product.stockQty <= (product.lowStockThreshold ?? 5);
                 return (
                   <div key={product._id} className="rounded-xl border border-slate-200 p-3.5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-semibold text-slate-800">{product.name}</p>
-                        <p className="text-[11px] text-slate-400">
-                          {product.sku} • {product.category}
-                        </p>
+                        <p className="text-[11px] text-slate-400">{product.sku} · {product.category}</p>
                       </div>
                       <span className={low ? 'badge-amber' : 'badge-green'}>
                         {formatNumber(product.stockQty)} {product.unit}
                       </span>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-slate-50 p-2.5 text-center text-xs">
+                    <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-2.5 text-center text-xs">
                       <div>
-                        <p className="text-[10px] text-slate-400">{t('products.costPrice')}</p>
+                        <p className="text-[10px] text-slate-400">Cost price</p>
                         <p className="font-semibold text-slate-700">{formatMoney(product.costPrice)}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-400">{t('products.sellPrice')}</p>
-                        <p className="font-semibold text-slate-700">{formatMoney(product.sellPrice)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400">{t('products.margin')}</p>
-                        <p className="font-semibold text-emerald-600">{margin.toFixed(1)}%</p>
+                        <p className="text-[10px] text-slate-400">Low stock alert at</p>
+                        <p className="font-semibold text-slate-700">{formatNumber(product.lowStockThreshold ?? 5)}</p>
                       </div>
                     </div>
                     <div className="mt-3 flex justify-end gap-2">
@@ -415,11 +364,7 @@ export default function Products() {
                         <Edit3 className="h-3.5 w-3.5" />
                         {t('common.edit')}
                       </button>
-                      <button
-                        type="button"
-                        className="btn-danger btn-sm"
-                        onClick={() => setConfirm({ open: true, product, loading: false })}
-                      >
+                      <button type="button" className="btn-danger btn-sm" onClick={() => setConfirm({ open: true, product, loading: false })}>
                         <Trash2 className="h-3.5 w-3.5" />
                         {t('common.delete')}
                       </button>

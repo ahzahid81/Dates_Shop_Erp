@@ -59,6 +59,7 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/summary', require('./routes/summary'));
 app.use('/api/quotations', require('./routes/quotations'));
 app.use('/api/audit-logs', require('./routes/audit'));
+app.use('/api/cold-storage', require('./routes/coldStorage'));
 
 const clientDist = path.resolve(__dirname, '../client/dist');
 if (fs.existsSync(clientDist)) {

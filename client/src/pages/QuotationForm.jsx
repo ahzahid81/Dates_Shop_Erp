@@ -109,7 +109,7 @@ export default function QuotationForm() {
               product: productId,
               name: product ? product.name : '',
               sku: product ? product.sku : '',
-              unitPrice: product ? product.sellPrice : item.unitPrice,
+              unitPrice: '',
             }
           : item
       ),
@@ -131,6 +131,10 @@ export default function QuotationForm() {
     }
     if (form.items.some((item) => !item.name.trim())) {
       toast.error(t('quotations.itemName'));
+      return;
+    }
+    if (form.items.some((item) => item.unitPrice === '' || Number(item.unitPrice) <= 0)) {
+      toast.error(t('sales.unitPrice'));
       return;
     }
     setSaving(true);

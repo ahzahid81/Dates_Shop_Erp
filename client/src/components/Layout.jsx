@@ -18,6 +18,7 @@ import {
   Percent,
   Receipt,
   ShoppingCart,
+  Snowflake,
   Users,
   Wallet,
   X,
@@ -47,6 +48,7 @@ const groups = [
       { to: '/quotations', key: 'nav.quotations', icon: FileSpreadsheet, adminOnly: true },
       { to: '/products', key: 'nav.products', icon: Package, adminOnly: true },
       { to: '/stock', key: 'nav.stock', icon: Boxes, adminOnly: true },
+      { to: '/cold-storage', key: 'nav.coldStorage', icon: Snowflake, adminOnly: true },
     ],
   },
   {
