@@ -18,6 +18,7 @@ const listQuotations = asyncHandler(async (req, res) => {
   const [quotations, total] = await Promise.all([
     Quotation.find(filter)
       .populate('employee', 'name')
+      .populate('items.product', 'unit')
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
@@ -29,7 +30,9 @@ const listQuotations = asyncHandler(async (req, res) => {
 });
 
 const getQuotation = asyncHandler(async (req, res) => {
-  const quotation = await Quotation.findById(req.params.id).populate('employee', 'name');
+  const quotation = await Quotation.findById(req.params.id)
+    .populate('employee', 'name')
+    .populate('items.product', 'unit');
   if (!quotation) return res.status(404).json({ message: 'Quotation not found' });
   res.json({ quotation });
 });
@@ -58,6 +61,7 @@ const buildItems = async (items = []) => {
       name,
       sku,
       quantity,
+      unit: product?.unit || raw.unit || 'pcs',
       unitPrice,
       lineTotal: Number((quantity * unitPrice).toFixed(2)),
     };

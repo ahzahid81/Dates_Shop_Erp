@@ -20,6 +20,7 @@ const listStock = asyncHandler(async (req, res) => {
   const [entries, total] = await Promise.all([
     StockEntry.find(filter)
       .populate('employee', 'name role')
+      .populate('product', 'unit')
       .sort({ date: -1 })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
@@ -56,6 +57,7 @@ const addStock = asyncHandler(async (req, res) => {
     entry = await StockEntry.create({
       product: product._id,
       productName: product.name,
+      unit: product.unit || 'pcs',
       quantity: qty,
       unitCost: cost,
       totalCost,

@@ -252,7 +252,7 @@ export default function Dashboard() {
                         />
                       </div>
                       <span className="shrink-0 text-[10px] text-slate-400">
-                        {formatNumber(product.quantity)} {t('dashboard.units')}
+                        {formatNumber(product.quantity)} {product.unit || 'pcs'}
                       </span>
                     </div>
                   </div>

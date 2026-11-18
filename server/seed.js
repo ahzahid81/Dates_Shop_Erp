@@ -70,6 +70,7 @@ const seed = async () => {
         const entry = await StockEntry.create({
           product: product._id,
           productName: product.name,
+          unit: product.unit,
           quantity: item.stockQty,
           unitCost: item.costPrice,
           totalCost,

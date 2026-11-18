@@ -27,6 +27,7 @@ const listSales = asyncHandler(async (req, res) => {
   const [sales, total, totals] = await Promise.all([
     Sale.find(filter)
       .populate('employee', 'name role')
+      .populate('items.product', 'unit')
       .sort({ date: -1, createdAt: -1 })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
@@ -57,7 +58,9 @@ const listSales = asyncHandler(async (req, res) => {
 });
 
 const getSale = asyncHandler(async (req, res) => {
-  const sale = await Sale.findById(req.params.id).populate('employee', 'name role');
+  const sale = await Sale.findById(req.params.id)
+    .populate('employee', 'name role')
+    .populate('items.product', 'unit');
   if (!sale) return res.status(404).json({ message: 'Sale not found' });
   if (req.user.role === 'employee' && String(sale.employee._id) !== String(req.user._id)) {
     return res.status(403).json({ message: 'You can only view your own sales' });
@@ -103,6 +106,7 @@ const createSale = asyncHandler(async (req, res) => {
       name: product.name,
       sku: product.sku,
       quantity: qty,
+      unit: product.unit || 'pcs',
       unitPrice,
       costPrice: product.costPrice,
       lineTotal,

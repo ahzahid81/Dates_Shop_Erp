@@ -229,7 +229,7 @@ export default function MonthlySummary() {
                           style={{ width: `${Math.max((product.revenue / topMax) * 100, 4)}%` }}
                         />
                       </div>
-                      <span className="shrink-0 text-[10px] text-slate-400">{formatNumber(product.quantity)} qty</span>
+                      <span className="shrink-0 text-[10px] text-slate-400">{formatNumber(product.quantity)} {product.unit || 'pcs'}</span>
                       <span className="shrink-0 text-[10px] font-semibold text-emerald-600">{formatMoney(product.profit)}</span>
                     </div>
                   </div>

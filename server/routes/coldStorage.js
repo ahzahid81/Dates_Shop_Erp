@@ -21,7 +21,9 @@ router.post(
   '/entries',
   body('product').isMongoId().withMessage('Select a product'),
   body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('cartons').optional().isInt({ min: 0 }).withMessage('Cartons must be a whole number'),
   body('unitCost').optional().isFloat({ min: 0 }).withMessage('Unit cost must be valid'),
+  body('totalCost').optional().isFloat({ min: 0 }).withMessage('Total cost must be valid'),
   validate,
   addEntry
 );
@@ -30,6 +32,7 @@ router.post(
   '/transfers',
   body('product').isMongoId().withMessage('Select a product'),
   body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('cartons').optional().isInt({ min: 0 }).withMessage('Cartons must be a whole number'),
   validate,
   createTransfer
 );

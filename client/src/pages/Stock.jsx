@@ -145,7 +145,7 @@ export default function Stock() {
                 <option value="">{t('sales.selectProductPlaceholder')}</option>
                 {products.map((product) => (
                   <option key={product._id} value={product._id}>
-                    {product.name} ({product.stockQty})
+                    {product.name} ({product.stockQty} {product.unit || 'pcs'})
                   </option>
                 ))}
               </select>
@@ -153,7 +153,7 @@ export default function Stock() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">{t('stock.quantity')}</label>
+                <label className="label">{t('stock.quantity')}{selected ? ` (${selected.unit})` : ''}</label>
                 <input
                   type="number"
                   min="1"
@@ -201,7 +201,7 @@ export default function Stock() {
                     {t('stock.stockAfter')}: <strong className="text-slate-700">{formatNumber(stockAfter)} {selected.unit}</strong>
                   </span>
                   <span>
-                    {t('stock.currentStock')}: {formatNumber(selected.stockQty)}
+                    {t('stock.currentStock')}: {formatNumber(selected.stockQty)} {selected.unit}
                   </span>
                 </div>
               )}
@@ -266,7 +266,7 @@ export default function Stock() {
                           <p className="font-semibold text-slate-800">{entry.productName}</p>
                           <p className="text-[11px] text-slate-400">{entry.note || entry.paymentMethod}</p>
                         </td>
-                        <td className="text-right font-medium">{formatNumber(entry.quantity)}</td>
+                        <td className="text-right font-medium">{formatNumber(entry.quantity)} {entry.unit || entry.product?.unit || 'pcs'}</td>
                         <td className="text-right">{formatMoney(entry.unitCost)}</td>
                         <td className="text-right font-bold text-slate-900">{formatMoney(entry.totalCost)}</td>
                         <td className="text-slate-500">{entry.supplier || '-'}</td>
@@ -287,7 +287,7 @@ export default function Stock() {
                       <p className="text-sm font-bold text-slate-900">{formatMoney(entry.totalCost)}</p>
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                      <span className="badge-slate">{formatNumber(entry.quantity)} units</span>
+                      <span className="badge-slate">{formatNumber(entry.quantity)} {entry.unit || entry.product?.unit || 'pcs'}</span>
                       <span>{formatMoney(entry.unitCost)} each</span>
                       <span className="ml-auto">{entry.employee?.name}</span>
                     </div>

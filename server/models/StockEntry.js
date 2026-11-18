@@ -5,6 +5,7 @@ const stockEntrySchema = new mongoose.Schema(
     product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true, index: true },
     productName: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
+    unit: { type: String, trim: true, default: 'pcs' },
     unitCost: { type: Number, required: true, min: 0 },
     totalCost: { type: Number, required: true, min: 0 },
     supplier: { type: String, trim: true, maxlength: 150 },

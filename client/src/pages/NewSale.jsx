@@ -328,6 +328,7 @@ export default function NewSale() {
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
+                        <span className="shrink-0 text-[10px] font-semibold text-slate-400">{item.unit}</span>
                         <div className="flex flex-1 items-center gap-1 rounded-lg border border-slate-200 px-2 py-1">
                           <span className="text-[10px] font-semibold text-slate-400">SAR</span>
                           <input

@@ -11,39 +11,47 @@ const { localDateKey } = require('../utils/sequence');
 const TZ = 'Asia/Riyadh';
 
 const getStockList = asyncHandler(async (req, res) => {
-  const [added, transferred] = await Promise.all([
+  const [added, transferred, products] = await Promise.all([
     ColdStorageEntry.aggregate([
-      { $group: { _id: '$product', productName: { $first: '$productName' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
+      { $group: { _id: '$product', productName: { $first: '$productName' }, unit: { $first: '$unit' }, quantity: { $sum: '$quantity' }, cartons: { $sum: '$cartons' }, totalCost: { $sum: '$totalCost' } } },
     ]),
     ColdStorageTransfer.aggregate([
-      { $group: { _id: '$product', quantity: { $sum: '$quantity' } } },
+      { $group: { _id: '$product', quantity: { $sum: '$quantity' }, cartons: { $sum: '$cartons' } } },
     ]),
+    Product.find({}, 'unit').lean(),
   ]);
+  const unitMap = new Map(products.map((p) => [String(p._id), p.unit]));
   const outMap = new Map(transferred.map((t) => [String(t._id), t.quantity]));
+  const outCartonsMap = new Map(transferred.map((t) => [String(t._id), t.cartons || 0]));
   const round = (value) => Number(value.toFixed(2));
   const items = added
     .map((a) => {
       const out = outMap.get(String(a._id)) || 0;
+      const outCartons = outCartonsMap.get(String(a._id)) || 0;
       const qty = a.quantity - out;
+      const cartons = (a.cartons || 0) - outCartons;
       const unitCost = a.quantity > 0 ? a.totalCost / a.quantity : 0;
       return {
         product: a._id,
         productName: a.productName,
+        unit: unitMap.get(String(a._id)) || a.unit || 'pcs',
         quantity: qty,
+        cartons,
         unitCost: round(unitCost),
         value: round(qty * unitCost),
         totalCost: a.totalCost,
       };
     })
-    .filter((i) => i.quantity > 0)
+    .filter((i) => i.quantity > 0 || i.cartons > 0)
     .sort((a, b) => a.productName.localeCompare(b.productName));
   const summary = items.reduce(
     (acc, item) => ({
       items: acc.items + 1,
       quantity: acc.quantity + item.quantity,
+      cartons: acc.cartons + item.cartons,
       value: acc.value + item.value,
     }),
-    { items: 0, quantity: 0, value: 0 }
+    { items: 0, quantity: 0, cartons: 0, value: 0 }
   );
   summary.value = round(summary.value);
   res.json({ items, summary });
@@ -62,6 +70,7 @@ const listEntries = asyncHandler(async (req, res) => {
   const [entries, total] = await Promise.all([
     ColdStorageEntry.find(filter)
       .populate('employee', 'name role')
+      .populate('product', 'unit')
       .sort({ date: -1 })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
@@ -72,20 +81,30 @@ const listEntries = asyncHandler(async (req, res) => {
 });
 
 const addEntry = asyncHandler(async (req, res) => {
-  const { product: productId, quantity, unitCost, supplier, note, date } = req.body;
+  const { product: productId, quantity, cartons, unitCost, totalCost, supplier, note, date } = req.body;
   const product = await Product.findById(productId);
   if (!product || !product.isActive) return res.status(404).json({ message: 'Active product not found' });
   const qty = Number(quantity);
+  const cartonCount = Number(cartons) || 0;
   const cost = Number(unitCost) || 0;
   if (!qty || qty < 1) return res.status(422).json({ message: 'Quantity must be at least 1' });
+  if (cartonCount < 0) return res.status(422).json({ message: 'Cartons cannot be negative' });
   if (cost < 0) return res.status(422).json({ message: 'Unit cost cannot be negative' });
-  const totalCost = Number((qty * cost).toFixed(2));
+  const hasTotal = totalCost !== undefined && totalCost !== null && totalCost !== '';
+  const providedTotal = hasTotal ? Number(totalCost) : null;
+  if (hasTotal && (Number.isNaN(providedTotal) || providedTotal < 0)) {
+    return res.status(422).json({ message: 'Total cost cannot be negative' });
+  }
+  const total = hasTotal ? Number(providedTotal.toFixed(2)) : Number((qty * cost).toFixed(2));
+  const unit = cost > 0 ? cost : Number((total / qty).toFixed(2));
   const entry = await ColdStorageEntry.create({
     product: product._id,
     productName: product.name,
+    unit: product.unit || 'pcs',
     quantity: qty,
-    unitCost: cost,
-    totalCost,
+    cartons: cartonCount,
+    unitCost: unit,
+    totalCost: total,
     supplier,
     note,
     date: date ? new Date(date) : new Date(),
@@ -95,8 +114,8 @@ const addEntry = asyncHandler(async (req, res) => {
     action: 'COLD_STORAGE_IN',
     entity: 'ColdStorageEntry',
     entityId: entry._id,
-    description: `Added ${qty} ${product.name} to cold storage`,
-    meta: { totalCost },
+    description: `Added ${qty} ${product.unit || 'pcs'} ${product.name} to cold storage`,
+    meta: { totalCost: total, cartons: cartonCount },
   });
   res.status(201).json({ entry });
 });
@@ -114,6 +133,7 @@ const listTransfers = asyncHandler(async (req, res) => {
   const [transfers, total] = await Promise.all([
     ColdStorageTransfer.find(filter)
       .populate('employee', 'name role')
+      .populate('product', 'unit')
       .sort({ date: -1 })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
@@ -124,24 +144,34 @@ const listTransfers = asyncHandler(async (req, res) => {
 });
 
 const createTransfer = asyncHandler(async (req, res) => {
-  const { product: productId, quantity, note, date } = req.body;
+  const { product: productId, quantity, cartons, note, date } = req.body;
   const product = await Product.findById(productId);
   if (!product || !product.isActive) return res.status(404).json({ message: 'Active product not found' });
   const qty = Number(quantity);
+  const cartonCount = Number(cartons) || 0;
   if (!qty || qty < 1) return res.status(422).json({ message: 'Quantity must be at least 1' });
+  if (cartonCount < 0) return res.status(422).json({ message: 'Cartons cannot be negative' });
 
   const [addedAgg, transferredAgg] = await Promise.all([
     ColdStorageEntry.aggregate([
       { $match: { product: product._id } },
-      { $group: { _id: null, qty: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
+      { $group: { _id: null, qty: { $sum: '$quantity' }, cartons: { $sum: '$cartons' }, totalCost: { $sum: '$totalCost' } } },
     ]),
-    ColdStorageTransfer.aggregate([{ $match: { product: product._id } }, { $group: { _id: null, qty: { $sum: '$quantity' } } }]),
+    ColdStorageTransfer.aggregate([
+      { $match: { product: product._id } },
+      { $group: { _id: null, qty: { $sum: '$quantity' }, cartons: { $sum: '$cartons' } } },
+    ]),
   ]);
   const addedQty = addedAgg[0]?.qty || 0;
   const addedCost = addedAgg[0]?.totalCost || 0;
+  const addedCartons = addedAgg[0]?.cartons || 0;
   const available = addedQty - (transferredAgg[0]?.qty || 0);
+  const availableCartons = addedCartons - (transferredAgg[0]?.cartons || 0);
   if (qty > available) {
     return res.status(409).json({ message: `Insufficient cold storage stock. Available: ${available}` });
+  }
+  if (cartonCount > availableCartons) {
+    return res.status(409).json({ message: `Insufficient cartons in cold storage. Available: ${availableCartons}` });
   }
 
   const previousQty = product.stockQty || 0;
@@ -164,7 +194,9 @@ const createTransfer = asyncHandler(async (req, res) => {
     transfer = await ColdStorageTransfer.create({
       product: product._id,
       productName: product.name,
+      unit: product.unit || 'pcs',
       quantity: qty,
+      cartons: cartonCount,
       unitCost: coldUnitCost,
       totalCost: transferCost,
       note,
@@ -175,6 +207,7 @@ const createTransfer = asyncHandler(async (req, res) => {
     stockEntry = await StockEntry.create({
       product: product._id,
       productName: product.name,
+      unit: product.unit || 'pcs',
       quantity: qty,
       unitCost: coldUnitCost,
       totalCost: transferCost,
@@ -213,8 +246,8 @@ const createTransfer = asyncHandler(async (req, res) => {
     action: 'COLD_STORAGE_TRANSFER',
     entity: 'ColdStorageTransfer',
     entityId: transfer._id,
-    description: `Transferred ${qty} ${product.name} from cold storage to shop at ${coldUnitCost} each (cash paid)`,
-    meta: { unitCost: coldUnitCost, totalCost: transferCost, stockEntryId: stockEntry._id },
+    description: `Transferred ${qty} ${product.unit || 'pcs'} ${product.name} from cold storage to shop at ${coldUnitCost} each (cash paid)`,
+    meta: { unitCost: coldUnitCost, totalCost: transferCost, cartons: cartonCount, stockEntryId: stockEntry._id },
   });
 
   res.status(201).json({ transfer, product, stockEntry, cashTransaction });
@@ -235,12 +268,12 @@ const monthlyReport = asyncHandler(async (req, res) => {
     ]),
     ColdStorageEntry.aggregate([
       { $match: { date: { $gte: start, $lt: end } } },
-      { $group: { _id: '$product', name: { $first: '$productName' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
+      { $group: { _id: '$product', name: { $first: '$productName' }, unit: { $first: '$unit' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
       { $sort: { quantity: -1 } },
     ]),
     ColdStorageTransfer.aggregate([
       { $match: { date: { $gte: start, $lt: end } } },
-      { $group: { _id: '$product', name: { $first: '$productName' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
+      { $group: { _id: '$product', name: { $first: '$productName' }, unit: { $first: '$unit' }, quantity: { $sum: '$quantity' }, totalCost: { $sum: '$totalCost' } } },
       { $sort: { quantity: -1 } },
     ]),
   ]);

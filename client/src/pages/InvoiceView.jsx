@@ -17,7 +17,7 @@ import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
 import { SHOP } from '../config';
-import { formatDate, formatMoney, paymentLabel } from '../lib/format';
+import { formatDate, formatMoney, formatNumber, paymentLabel } from '../lib/format';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { PageLoader } from '../components/States';
@@ -250,7 +250,7 @@ export default function InvoiceView() {
                       <p className="text-[10px] text-slate-400">{item.sku}</p>
                     </td>
                     <td className="whitespace-nowrap px-2 py-2.5 text-right text-slate-600 sm:px-4 sm:py-3">{formatMoney(item.unitPrice)}</td>
-                    <td className="px-2 py-2.5 text-right text-slate-600 sm:px-4 sm:py-3">{item.quantity}</td>
+                    <td className="px-2 py-2.5 text-right text-slate-600 sm:px-4 sm:py-3">{formatNumber(item.quantity)} {item.unit || item.product?.unit || 'pcs'}</td>
                     <td className="whitespace-nowrap px-2 py-2.5 text-right font-semibold text-slate-800 sm:px-4 sm:py-3">{formatMoney(item.lineTotal)}</td>
                   </tr>
                 ))}

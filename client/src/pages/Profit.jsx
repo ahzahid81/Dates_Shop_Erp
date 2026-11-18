@@ -167,7 +167,7 @@ export default function Profit() {
                         <p className="font-semibold text-slate-800">{product.name}</p>
                         <p className="text-[11px] text-slate-400">{product.sku}</p>
                       </td>
-                      <td className="text-right">{formatNumber(product.quantity)}</td>
+                      <td className="text-right">{formatNumber(product.quantity)} {product.unit || 'pcs'}</td>
                       <td className="text-right">{formatMoney(product.revenue)}</td>
                       <td className="text-right">{formatMoney(product.cost)}</td>
                       <td className="text-right font-semibold text-emerald-600">{formatMoney(product.profit)}</td>

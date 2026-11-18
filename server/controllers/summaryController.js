@@ -162,6 +162,7 @@ const monthlySummary = asyncHandler(async (req, res) => {
           _id: '$items.product',
           name: { $first: '$items.name' },
           sku: { $first: '$items.sku' },
+          unit: { $first: '$items.unit' },
           quantity: { $sum: '$items.quantity' },
           revenue: { $sum: '$items.lineTotal' },
           cost: { $sum: { $multiply: ['$items.quantity', '$items.costPrice'] } },
@@ -291,7 +292,7 @@ const dashboard = asyncHandler(async (req, res) => {
       Sale.aggregate([
         { $match: { date: { $gte: thisMonth.start, $lt: thisMonth.end }, status: 'completed' } },
         { $unwind: '$items' },
-        { $group: { _id: '$items.product', name: { $first: '$items.name' }, quantity: { $sum: '$items.quantity' }, revenue: { $sum: '$items.lineTotal' }, profit: { $sum: '$items.profit' } } },
+        { $group: { _id: '$items.product', name: { $first: '$items.name' }, unit: { $first: '$items.unit' }, quantity: { $sum: '$items.quantity' }, revenue: { $sum: '$items.lineTotal' }, profit: { $sum: '$items.profit' } } },
         { $sort: { revenue: -1 } },
         { $limit: 6 },
       ]),
@@ -431,6 +432,7 @@ const profitReport = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: { product: '$items.product', name: '$items.name', sku: '$items.sku' },
+          unit: { $first: '$items.unit' },
           quantity: { $sum: '$items.quantity' },
           revenue: { $sum: '$items.lineTotal' },
           cost: { $sum: { $multiply: ['$items.quantity', '$items.costPrice'] } },
@@ -451,6 +453,7 @@ const profitReport = asyncHandler(async (req, res) => {
     productId: p._id.product,
     name: p._id.name,
     sku: p._id.sku,
+    unit: p.unit || 'pcs',
     quantity: p.quantity,
     revenue: Number(p.revenue.toFixed(2)),
     cost: Number(p.cost.toFixed(2)),
@@ -535,7 +538,7 @@ const getStatement = asyncHandler(async (req, res) => {
       date: s.date,
       category: 'Stock Purchase',
       reference: s.supplier || 'Supplier',
-      description: `${s.productName} x ${s.quantity}`,
+      description: `${s.productName} x ${s.quantity} ${s.unit || 'pcs'}`,
       employee: s.employee?.name || '-',
       employeeId: s.employee?._id,
       direction: 'out',

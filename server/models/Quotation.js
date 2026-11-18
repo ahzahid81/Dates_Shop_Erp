@@ -6,6 +6,7 @@ const quotationItemSchema = new mongoose.Schema(
     name: { type: String, required: true },
     sku: { type: String },
     quantity: { type: Number, required: true, min: 1 },
+    unit: { type: String, trim: true, default: 'pcs' },
     unitPrice: { type: Number, required: true, min: 0 },
     lineTotal: { type: Number, required: true, min: 0 },
   },

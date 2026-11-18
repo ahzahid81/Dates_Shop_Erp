@@ -193,7 +193,7 @@ export default function DailySummary() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-800">{entry.productName}</p>
                         <p className="text-[11px] text-slate-400">
-                          {formatNumber(entry.quantity)} × {formatMoney(entry.unitCost)} • {entry.supplier || 'Supplier'}
+                          {formatNumber(entry.quantity)} {entry.unit || 'pcs'} · {formatMoney(entry.unitCost)} • {entry.supplier || 'Supplier'}
                         </p>
                       </div>
                       <p className="text-sm font-bold text-slate-800">{formatMoney(entry.totalCost)}</p>
